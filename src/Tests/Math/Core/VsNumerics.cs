@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Fusee.Test.Math.Core
 {
-    
+
 
     class VsNumerics
     {
@@ -32,7 +32,7 @@ namespace Fusee.Test.Math.Core
 
         public void IsAddEqualFloat3()
         {
-            var expected1 = new Vector3(4,4,4);
+            var expected1 = new Vector3(4, 4, 4);
             var expected2 = new float3(4, 4, 4);
 
             var newVector3 = System.Numerics.Vector3.Add(vector3, vector4);
@@ -60,7 +60,7 @@ namespace Fusee.Test.Math.Core
 
         public void IsMultEqualFloat3()
         {
-            var expected1 = new Vector3(3,4,3);
+            var expected1 = new Vector3(3, 4, 3);
             var expected2 = new float3(3, 4, 3);
             var newVector3 = System.Numerics.Vector3.Multiply(vector3, vector4);
             var newFloat3 = Fusee.Math.Core.float3.Multiply(vector1, vector2);
@@ -86,7 +86,7 @@ namespace Fusee.Test.Math.Core
         }
         public void IsMinEqualFloat3()
         {
-            var expected1 = new Vector3(1,2,1);
+            var expected1 = new Vector3(1, 2, 1);
             var expected2 = new float3(1, 2, 1);
 
             var minVector3 = System.Numerics.Vector3.Min(vector3, vector4);
@@ -99,7 +99,7 @@ namespace Fusee.Test.Math.Core
 
         public void IsMaxEqualFloat3()
         {
-            var expected1 = new Vector3(3,2,3);
+            var expected1 = new Vector3(3, 2, 3);
             var expected2 = new float3(3, 2, 3);
 
             var maxVector3 = System.Numerics.Vector3.Max(vector3, vector4);
@@ -112,7 +112,7 @@ namespace Fusee.Test.Math.Core
 
         public void IsNormalizeEqualFloat3()
         {
-            var expected1 = new Vector3 (1 / System.MathF.Sqrt(14), System.MathF.Sqrt(2 / 7), (float)(3 / System.Math.Sqrt(14)));
+            var expected1 = new Vector3(1 / System.MathF.Sqrt(14), System.MathF.Sqrt(2 / 7), (float)(3 / System.Math.Sqrt(14)));
             var expected2 = new float3(1 / System.MathF.Sqrt(14), System.MathF.Sqrt(2 / 7), (float)(3 / System.Math.Sqrt(14)));
 
             var normalizedVector3 = System.Numerics.Vector3.Normalize(vector3);
@@ -147,7 +147,7 @@ namespace Fusee.Test.Math.Core
             Assert.Equal(expected2, newFloat3);
 
         }
-              
+
         public void IsAddEqualFloat4X4()
         {
             var expected1 = new Matrix4x4(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5);
@@ -155,7 +155,7 @@ namespace Fusee.Test.Math.Core
 
             var newMatrix = System.Numerics.Matrix4x4.Add(matrix3, matrix4);
             var newFloat4X4 = Fusee.Math.Core.float4x4.Add(matrix1, matrix2);
-            
+
             Assert.Equal(expected1, newMatrix);
             Assert.Equal(expected2, newFloat4X4);
         }
@@ -217,7 +217,7 @@ namespace Fusee.Test.Math.Core
 
         }
 
-      
+
 
 
 

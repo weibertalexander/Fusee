@@ -490,7 +490,7 @@ namespace Fusee.Math.Core
 
         public static explicit operator Vector3(int3 f) => new Vector3((float)f.x, (float)f.y, (float)f.z);
 
-        public static explicit operator int3(Vector3 v) => new int3((int)v.X,(int)v.Y,(int)v.Z);
+        public static explicit operator int3(Vector3 v) => new int3((int)v.X, (int)v.Y, (int)v.Z);
         #endregion Operators
 
         #region Overrides

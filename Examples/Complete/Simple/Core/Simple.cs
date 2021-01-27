@@ -131,7 +131,7 @@ namespace Fusee.Examples.Simple.Core
             // Swap buffers: Show the contents of the backbuffer (containing the currently rendered frame) on the front buffer.
             Present();
 
-           
+
         }
 
         private SceneContainer CreateGui()

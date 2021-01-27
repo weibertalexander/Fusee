@@ -914,9 +914,9 @@ namespace Fusee.Math.Core
         */
 
 
-        public static implicit operator Vector4(float4 f) => new Vector4(f.x, f.y, f.z,f.w);
+        public static implicit operator Vector4(float4 f) => new Vector4(f.x, f.y, f.z, f.w);
 
-        public static implicit operator float4(Vector4 v) => new float4(v.X, v.Y, v.Z,v.W);
+        public static implicit operator float4(Vector4 v) => new float4(v.X, v.Y, v.Z, v.W);
 
         #endregion Operators
 

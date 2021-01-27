@@ -108,13 +108,13 @@ namespace Fusee.Math.Core
             z = (float)d3.z;
         }
 
-        
+
         /// <summary>
         /// Constructs a new float3.
         /// </summary>
         /// <param name="v">The vector3 to cast into float3</param>
-        
-        public float3 (Vector3 v)
+
+        public float3(Vector3 v)
         {
             this.x = v.X;
             this.y = v.Y;
@@ -1162,9 +1162,9 @@ namespace Fusee.Math.Core
             return new float3(d3);
         }
 
-        public static implicit operator Vector3(float3 f) => new Vector3 (f.x,f.y,f.z);
+        public static implicit operator Vector3(float3 f) => new Vector3(f.x, f.y, f.z);
 
-        public static implicit operator float3(Vector3 v) => new float3 (v.X,v.Y,v.Z);
+        public static implicit operator float3(Vector3 v) => new float3(v.X, v.Y, v.Z);
 
 
         #endregion Operators

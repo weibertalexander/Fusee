@@ -1833,7 +1833,7 @@ namespace Fusee.Math.Core
             return new float4x4(d4x4);
         }
 
-        public static implicit operator Matrix4x4(float4x4 f) => new Matrix4x4(f.M11, f.M12, f.M13,f.M14,f.M21,f.M22,f.M23,f.M24,f.M31,f.M32,f.M33,f.M34,f.M41,f.M42,f.M43,f.M44);
+        public static implicit operator Matrix4x4(float4x4 f) => new Matrix4x4(f.M11, f.M12, f.M13, f.M14, f.M21, f.M22, f.M23, f.M24, f.M31, f.M32, f.M33, f.M34, f.M41, f.M42, f.M43, f.M44);
         public static implicit operator float4x4(Matrix4x4 m) => new float4x4(m.M11, m.M12, m.M13, m.M14, m.M21, m.M22, m.M23, m.M24, m.M31, m.M32, m.M33, m.M34, m.M41, m.M42, m.M43, m.M44);
         #endregion Operators
 
