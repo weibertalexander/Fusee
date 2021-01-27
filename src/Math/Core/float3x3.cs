@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Runtime.InteropServices;
 
+
 namespace Fusee.Math.Core
 {
     /// <summary>
@@ -86,6 +87,7 @@ namespace Fusee.Math.Core
             Row1 = new float3(mat4.Row1.x, mat4.Row1.y, mat4.Row1.z);
             Row2 = new float3(mat4.Row2.x, mat4.Row2.y, mat4.Row2.z);
         }
+       
 
         #endregion Constructors
 

@@ -13,6 +13,7 @@ using System.Linq;
 using static Fusee.Engine.Core.Input;
 using static Fusee.Engine.Core.Time;
 
+
 namespace Fusee.Examples.Simple.Core
 {
     [FuseeApplication(Name = "FUSEE Simple Example", Description = "A very simple example.")]
@@ -129,6 +130,8 @@ namespace Fusee.Examples.Simple.Core
 
             // Swap buffers: Show the contents of the backbuffer (containing the currently rendered frame) on the front buffer.
             Present();
+
+           
         }
 
         private SceneContainer CreateGui()

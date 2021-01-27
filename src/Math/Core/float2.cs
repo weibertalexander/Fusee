@@ -2,6 +2,7 @@ using ProtoBuf;
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace Fusee.Math.Core
 {
@@ -52,6 +53,11 @@ namespace Fusee.Math.Core
         {
             this.x = x;
             this.y = y;
+        }
+        public float2(Vector2 v)
+        {
+            this.x = v.X;
+            this.y = v.Y;
         }
 
         #endregion Constructors
@@ -782,6 +788,10 @@ namespace Fusee.Math.Core
         {
             return !left.Equals(right);
         }
+
+        public static implicit operator Vector2(float2 f) => new Vector2(f.x, f.y);
+
+        public static implicit operator float2(Vector2 v) => new float2(v.X, v.Y);
 
         #endregion Operators
 

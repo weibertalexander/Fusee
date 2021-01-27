@@ -2,6 +2,7 @@ using ProtoBuf;
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace Fusee.Math.Core
 {
@@ -166,6 +167,14 @@ namespace Fusee.Math.Core
             w = (float)d4.w;
         }
 
+        public float4(Vector4 v)
+        {
+            this.x = v.X;
+            this.y = v.Y;
+            this.z = v.Z;
+            this.w = v.W;
+
+        }
         #endregion Constructors
 
         #region Public Members
@@ -903,6 +912,11 @@ namespace Fusee.Math.Core
             }
         }
         */
+
+
+        public static implicit operator Vector4(float4 f) => new Vector4(f.x, f.y, f.z,f.w);
+
+        public static implicit operator float4(Vector4 v) => new float4(v.X, v.Y, v.Z,v.W);
 
         #endregion Operators
 

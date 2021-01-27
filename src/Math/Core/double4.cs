@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace Fusee.Math.Core
 {
@@ -138,6 +139,14 @@ namespace Fusee.Math.Core
             w = v.w;
         }
 
+        public double4(Vector4 v)
+        {
+            x = v.X;
+            y = v.Y;
+            z = v.Z;
+            w = v.W;
+
+        }
         #endregion Constructors
 
         #region Public Members
@@ -671,6 +680,10 @@ namespace Fusee.Math.Core
             return !left.Equals(right);
         }
 
+
+        public static explicit operator Vector4(double4 f) => new Vector4((float)f.x, (float)f.y, (float)f.z, (float)f.w);
+
+        public static implicit operator double4(Vector4 v) => new double4(v.X, v.Y, v.Z, v.W);
         /*
         /// <summary>
         /// Returns a pointer to the first element of the specified instance.

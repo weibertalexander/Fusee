@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace Fusee.Math.Core
 {
@@ -78,6 +79,12 @@ namespace Fusee.Math.Core
             x = v.x;
             y = v.y;
             z = v.z;
+        }
+        public double3(Vector3 v)
+        {
+            x = v.X;
+            y = v.Y;
+            z = v.Z;
         }
 
         #endregion Constructors
@@ -827,6 +834,10 @@ namespace Fusee.Math.Core
         {
             return !left.Equals(right);
         }
+
+        public static explicit operator Vector3(double3 f) => new Vector3((float)f.x, (float)f.y, (float)f.z);
+
+        public static implicit operator double3(Vector3 v) => new double3(v.X, v.Y, v.Z);
 
         #endregion Operators
 

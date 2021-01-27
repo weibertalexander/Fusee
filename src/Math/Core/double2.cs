@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace Fusee.Math.Core
 {
@@ -39,7 +40,11 @@ namespace Fusee.Math.Core
             this.x = x;
             this.y = y;
         }
-
+        public double2(Vector2 v)
+        {
+            x = v.X;
+            y = v.Y;
+        }
         #endregion Constructors
 
         #region Public Members
@@ -646,6 +651,10 @@ namespace Fusee.Math.Core
         {
             return !left.Equals(right);
         }
+
+        public static explicit operator Vector2(double2 f) => new Vector2((float)f.x, (float)f.y);
+
+        public static implicit operator double2(Vector2 v) => new double2(v.X, v.Y);
 
         #endregion Operators
 

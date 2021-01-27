@@ -2,6 +2,7 @@ using ProtoBuf;
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace Fusee.Math.Core
 {
@@ -127,6 +128,15 @@ namespace Fusee.Math.Core
             Row1 = new double4(m10, m11, m12, m13);
             Row2 = new double4(m20, m21, m22, m23);
             Row3 = new double4(m30, m31, m32, m33);
+        }
+
+        public double4x4(Matrix4x4 m)
+        {
+            Row0 = new double4(m.M11, m.M12, m.M13, m.M14);
+            Row1 = new double4(m.M21, m.M22, m.M23, m.M24);
+            Row2 = new double4(m.M31, m.M32, m.M33, m.M34);
+            Row3 = new double4(m.M41, m.M42, m.M43, m.M44);
+
         }
 
         #endregion Constructors
@@ -1607,6 +1617,9 @@ namespace Fusee.Math.Core
             return TransformPremult(vector, matrix);
         }
 
+
+        public static explicit operator Matrix4x4(double4x4 f) => new Matrix4x4((float)f.M11,(float)f.M12, (float)f.M13, (float)f.M14, (float)f.M21, (float)f.M22, (float)f.M23, (float)f.M24, (float)f.M31, (float)f.M32, (float)f.M33, (float)f.M34, (float)f.M41, (float)f.M42, (float)f.M43, (float)f.M44);
+        public static implicit operator double4x4(Matrix4x4 m) => new double4x4(m.M11, m.M12, m.M13, m.M14, m.M21, m.M22, m.M23, m.M24, m.M31, m.M32, m.M33, m.M34, m.M41, m.M42, m.M43, m.M44);
         #endregion Operators
 
         #region Overrides
