@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputPath>$(BaseOutputPath)\Examples\Simple\Core\</OutputPath>
   </PropertyGroup>
 
@@ -22,5 +22,6 @@
     <ProjectReference Include="$(FuseeEngineRoot)\src\Math\Core\Fusee.Math.Core.csproj" />
     <ProjectReference Include="$(FuseeEngineRoot)\src\Xene\Fusee.Xene.csproj" />
     <ProjectReference Include="$(FuseeEngineRoot)\src\Xirkit\Fusee.Xirkit.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Engine\Imp\UI\ImGui\Fusee.Engine.Imp.UI.ImGui.csproj" />
   </ItemGroup>
 </Project>

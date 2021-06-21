@@ -253,6 +253,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fusee.Examples.Starkiller.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fusee.Examples.Starkiller.Desktop", "Examples\Complete\Starkiller\Desktop\Fusee.Examples.Starkiller.Desktop.csproj", "{6629EF3B-DA6B-4217-8A21-2B3A0863FBF9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fusee.Engine.Imp.UI.ImGui", "src\Engine\Imp\UI\ImGui\Fusee.Engine.Imp.UI.ImGui.csproj", "{787538EE-8E4A-4FB8-A37C-0B715824C5CB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{50C58FF0-6F68-4EEC-AC72-8806F1FC529D}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Engine\Imp\Graphics\Shared\Fusee.Engine.Imp.Graphics.Shared.projitems*{253263c9-9c67-44a5-94d3-51c586bbdaec}*SharedItemsImports = 13
@@ -4653,6 +4657,60 @@ Global
 		{6629EF3B-DA6B-4217-8A21-2B3A0863FBF9}.Release-WebAsm|x64.Build.0 = Release|Any CPU
 		{6629EF3B-DA6B-4217-8A21-2B3A0863FBF9}.Release-WebAsm|x86.ActiveCfg = Release|Any CPU
 		{6629EF3B-DA6B-4217-8A21-2B3A0863FBF9}.Release-WebAsm|x86.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug|x64.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug|x86.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Android|Any CPU.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Android|Any CPU.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Android|x64.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Android|x64.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Android|x86.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Android|x86.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Desktop|Any CPU.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Desktop|Any CPU.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Desktop|x64.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Desktop|x64.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Desktop|x86.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-Desktop|x86.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-WebAsm|Any CPU.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-WebAsm|Any CPU.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-WebAsm|x64.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-WebAsm|x64.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-WebAsm|x86.ActiveCfg = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Debug-WebAsm|x86.Build.0 = Debug|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release|x64.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release|x64.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release|x86.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release|x86.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Android|Any CPU.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Android|Any CPU.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Android|x64.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Android|x64.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Android|x86.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Android|x86.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Desktop|Any CPU.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Desktop|Any CPU.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Desktop|x64.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Desktop|x64.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Desktop|x86.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-Desktop|x86.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-NuGet|Any CPU.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-NuGet|Any CPU.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-NuGet|x64.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-NuGet|x64.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-NuGet|x86.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-NuGet|x86.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-WebAsm|Any CPU.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-WebAsm|Any CPU.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-WebAsm|x64.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-WebAsm|x64.Build.0 = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-WebAsm|x86.ActiveCfg = Release|Any CPU
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB}.Release-WebAsm|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -4767,6 +4825,8 @@ Global
 		{C8A57860-4A53-46BA-969D-02EB861B3309} = {E68628DA-312F-4171-A5ED-08072B5CCA3C}
 		{E3CA0E6F-729D-4C5E-B3B0-E328F48C33CD} = {C8A57860-4A53-46BA-969D-02EB861B3309}
 		{6629EF3B-DA6B-4217-8A21-2B3A0863FBF9} = {C8A57860-4A53-46BA-969D-02EB861B3309}
+		{787538EE-8E4A-4FB8-A37C-0B715824C5CB} = {50C58FF0-6F68-4EEC-AC72-8806F1FC529D}
+		{50C58FF0-6F68-4EEC-AC72-8806F1FC529D} = {8242184B-D6AF-4129-8225-77D53F81BFDD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC1775C2-579F-4897-8770-592966D00E3D}

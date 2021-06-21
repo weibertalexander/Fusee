@@ -1,3 +1,4 @@
+using Dear_ImGui_Sample;
 using Fusee.Base.Common;
 using Fusee.Base.Core;
 using Fusee.Engine.Common;
@@ -8,6 +9,7 @@ using Fusee.Engine.Core.ShaderShards;
 using Fusee.Engine.GUI;
 using Fusee.Math.Core;
 using Fusee.Xene;
+using ImGuiNET;
 using System.Collections.Generic;
 using System.Linq;
 using static Fusee.Engine.Core.Input;
@@ -38,6 +40,8 @@ namespace Fusee.Examples.Simple.Core
 
         private bool _keys;
 
+        ImGuiController _controller;
+
         // Init is called on startup.
         public override void Init()
         {
@@ -55,6 +59,8 @@ namespace Fusee.Examples.Simple.Core
             // Wrap a SceneRenderer around the model.
             _sceneRenderer = new SceneRendererForward(_rocketScene);
             _guiRenderer = new SceneRendererForward(_gui);
+
+            _controller = new ImGuiController(Width, Height);
         }
 
         // RenderAFrame is called once a frame
@@ -64,6 +70,12 @@ namespace Fusee.Examples.Simple.Core
             RC.Clear(ClearFlags.Color | ClearFlags.Depth);
 
             RC.Viewport(0, 0, Width, Height);
+
+            _controller.Update(Time.DeltaTime);
+
+            ImGui.ShowDemoWindow();
+
+
 
             // Mouse and keyboard movement
             if (Keyboard.LeftRightAxis != 0 || Keyboard.UpDownAxis != 0)
@@ -126,6 +138,8 @@ namespace Fusee.Examples.Simple.Core
             }
 
             _guiRenderer.Render(RC);
+
+            _controller.Render();
 
             // Swap buffers: Show the contents of the backbuffer (containing the currently rendered frame) on the front buffer.
             Present();
