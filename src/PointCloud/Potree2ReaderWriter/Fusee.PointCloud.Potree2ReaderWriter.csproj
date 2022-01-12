@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<RootNamespace>Fusee.PointCloud.Potree2ReaderWriter</RootNamespace>
+	<PackageId>Fusee.PointCloud.Potree2ReaderWriter</PackageId>
+    <TargetFramework>net5.0</TargetFramework>
+	<Description>Fusee PointCloud Potree2ReaderWriter</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>$(BaseOutputPath)\Libraries\Fusee.PointCloud.Potree2ReaderWriter</OutputPath>
+    <DocumentationFile>$(OutputPath)\$(RootNamespace).xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Fusee.PointCloud.Common.csproj" />
+    <ProjectReference Include="..\Core\Fusee.PointCloud.Core.csproj" />
+  </ItemGroup>
+
+</Project>

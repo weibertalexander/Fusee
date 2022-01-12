@@ -18,5 +18,6 @@ namespace Fusee.PointCloud.Common
         /// Number of octants/nodes that are currently loaded.
         /// </summary>
         public int NumberOfOctants { get; }
+
     }
 }
