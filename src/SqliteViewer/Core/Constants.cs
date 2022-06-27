@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Fusee.Viewer.Core
+namespace Fusee.Examples.SQLiteViewer.Core
 {
     public static class Constants
     {

@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<LangVersion>default</LangVersion>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<LangVersion>default</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="Assets\Cube1030301\Las\Cube1030301.las" />
+		<None Remove="Assets\Cube1030301\Potree\hierarchy.bin" />
+		<None Remove="Assets\Cube1030301\Potree\metadata.json" />
+		<None Remove="Assets\Cube1030301\Potree\octree.bin" />
+		<None Remove="Assets\FuseeIconTop32.png" />
+		<None Remove="Assets\FuseeText.png" />
+		<None Remove="Assets\Lato-Black.ttf" />
+		<None Remove="Assets\RocketFus.fus" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Assets\**\*.*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.6" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Base\Common\Fusee.Base.Common.csproj" />
+		<ProjectReference Include="..\..\Base\Core\Fusee.Base.Core.csproj" />
+		<ProjectReference Include="..\..\Engine\Common\Fusee.Engine.Common.csproj" />
+		<ProjectReference Include="..\..\Engine\Core\Fusee.Engine.Core.csproj" />
+		<ProjectReference Include="..\..\Engine\GUI\Fusee.Engine.Gui.csproj" />
+		<ProjectReference Include="..\..\Engine\Imp\Graphics\Desktop\Fusee.Engine.Imp.Graphics.Desktop.csproj" />
+		<ProjectReference Include="..\..\ImGui\Desktop\Fusee.ImGui.Desktop\Fusee.ImGuiDesktop.csproj" />
+		<ProjectReference Include="..\..\Math\Core\Fusee.Math.Core.csproj" />
+		<ProjectReference Include="..\..\PointCloud\Common\Fusee.PointCloud.Common.csproj" />
+		<ProjectReference Include="..\..\PointCloud\Core\Fusee.PointCloud.Core.csproj" />
+		<ProjectReference Include="..\..\PointCloud\Las\Desktop\Fusee.PointCloud.Las.Desktop.csproj" />
+		<ProjectReference Include="..\..\PointCloud\Potree\Fusee.PointCloud.Potree.csproj" />
+	</ItemGroup>
+
+</Project>

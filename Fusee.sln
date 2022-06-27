@@ -303,13 +303,23 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ImGui", "ImGui", "{D1853E25-C274-44E7-8AB6-9BE3A4E61928}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fusee.Examples.PointCloudPotree2.ImGui", "Examples\Complete\PointCloudPotree2\ImGui\Fusee.Examples.PointCloudPotree2.ImGui.csproj", "{DF33EBD9-9CD9-409C-A10F-AC6FA8FA851D}"
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqliteViewer", "SqliteViewer", "{35851952-F962-4B75-820E-B84792CBFD5A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullView.Core", "src\SqliteViewer\Core\FullView.Core.csproj", "{91B356C6-3F32-4B4C-986F-A32087399E91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fusee.Examples.SQLiteViewer.Core", "src\SqliteViewer\Core\Fusee.Examples.SQLiteViewer.Core.csproj", "{91B356C6-3F32-4B4C-986F-A32087399E91}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullView.Desktop", "src\SqliteViewer\Desktop\FullView.Desktop.csproj", "{AA204145-AC3E-4AB8-8969-EED7233BBAAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fusee.Examples.SQLiteViewer.Desktop", "src\SqliteViewer\Desktop\Fusee.Examples.SQLiteViewer.Desktop.csproj", "{AA204145-AC3E-4AB8-8969-EED7233BBAAC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQLiteViewer", "SQLiteViewer", "{A8ECE4A1-AD6F-43B7-96FD-83ED7FF61C5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fusee.Examples.SQLiteViewer.NoGui", "Examples\Complete\SQLiteViewer\Fusee.Examples.SQLiteViewer.Base\Fusee.Examples.SQLiteViewer.NoGui.csproj", "{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\Engine\Imp\Graphics\Shared\Fusee.Engine.Imp.Graphics.Shared.projitems*{253263c9-9c67-44a5-94d3-51c586bbdaec}*SharedItemsImports = 13
+		src\Engine\Imp\Graphics\Shared\Fusee.Engine.Imp.Graphics.Shared.projitems*{b3ce4f39-fcc4-4388-8130-9d0b9d65d034}*SharedItemsImports = 5
+		src\PointCloud\Las\Shared\Fusee.PointCloud.Las.Shared.projitems*{dcc7da71-3e2e-476c-8391-1f9651637503}*SharedItemsImports = 13
+		src\PointCloud\Las\Shared\Fusee.PointCloud.Las.Shared.projitems*{f28634e7-52b8-4935-b19e-cb8a6844e6f1}*SharedItemsImports = 5
+		src\Engine\Imp\Graphics\Shared\Fusee.Engine.Imp.Graphics.Shared.projitems*{f7ad2bb5-d2b0-4697-bddb-4cc26152a6b6}*SharedItemsImports = 5
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug-Android|Any CPU = Debug-Android|Any CPU
@@ -1796,6 +1806,24 @@ Global
 		{AA204145-AC3E-4AB8-8969-EED7233BBAAC}.Release-Desktop|Any CPU.Build.0 = Release|Any CPU
 		{AA204145-AC3E-4AB8-8969-EED7233BBAAC}.Release-NuGet|Any CPU.ActiveCfg = Release|Any CPU
 		{AA204145-AC3E-4AB8-8969-EED7233BBAAC}.Release-NuGet|Any CPU.Build.0 = Release|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Debug-Android|Any CPU.ActiveCfg = Debug|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Debug-Android|Any CPU.Build.0 = Debug|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Debug-Blazor|Any CPU.ActiveCfg = Debug|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Debug-Blazor|Any CPU.Build.0 = Debug|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Debug-Desktop|Any CPU.ActiveCfg = Debug|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Debug-Desktop|Any CPU.Build.0 = Debug|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Release-Android|Any CPU.ActiveCfg = Release|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Release-Android|Any CPU.Build.0 = Release|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Release-Blazor|Any CPU.ActiveCfg = Release|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Release-Blazor|Any CPU.Build.0 = Release|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Release-Desktop|Any CPU.ActiveCfg = Release|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Release-Desktop|Any CPU.Build.0 = Release|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Release-NuGet|Any CPU.ActiveCfg = Release|Any CPU
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC}.Release-NuGet|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1930,17 +1958,12 @@ Global
 		{A1E5AC7E-97B2-4BED-AB75-780416E422A5} = {D1853E25-C274-44E7-8AB6-9BE3A4E61928}
 		{D1853E25-C274-44E7-8AB6-9BE3A4E61928} = {E68628DA-312F-4171-A5ED-08072B5CCA3C}
 		{DF33EBD9-9CD9-409C-A10F-AC6FA8FA851D} = {B2C0746D-E5CC-45F1-BD88-3E0D5A2A7191}
-		{91B356C6-3F32-4B4C-986F-A32087399E91} = {35851952-F962-4B75-820E-B84792CBFD5A}
-		{AA204145-AC3E-4AB8-8969-EED7233BBAAC} = {35851952-F962-4B75-820E-B84792CBFD5A}
+		{91B356C6-3F32-4B4C-986F-A32087399E91} = {A8ECE4A1-AD6F-43B7-96FD-83ED7FF61C5A}
+		{AA204145-AC3E-4AB8-8969-EED7233BBAAC} = {A8ECE4A1-AD6F-43B7-96FD-83ED7FF61C5A}
+		{A8ECE4A1-AD6F-43B7-96FD-83ED7FF61C5A} = {E68628DA-312F-4171-A5ED-08072B5CCA3C}
+		{15F51F0B-F72B-43DE-A865-483C6DB3ABBC} = {A8ECE4A1-AD6F-43B7-96FD-83ED7FF61C5A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC1775C2-579F-4897-8770-592966D00E3D}
-	EndGlobalSection
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		src\Engine\Imp\Graphics\Shared\Fusee.Engine.Imp.Graphics.Shared.projitems*{253263c9-9c67-44a5-94d3-51c586bbdaec}*SharedItemsImports = 13
-		src\Engine\Imp\Graphics\Shared\Fusee.Engine.Imp.Graphics.Shared.projitems*{b3ce4f39-fcc4-4388-8130-9d0b9d65d034}*SharedItemsImports = 5
-		src\PointCloud\Las\Shared\Fusee.PointCloud.Las.Shared.projitems*{dcc7da71-3e2e-476c-8391-1f9651637503}*SharedItemsImports = 13
-		src\PointCloud\Las\Shared\Fusee.PointCloud.Las.Shared.projitems*{f28634e7-52b8-4935-b19e-cb8a6844e6f1}*SharedItemsImports = 5
-		src\Engine\Imp\Graphics\Shared\Fusee.Engine.Imp.Graphics.Shared.projitems*{f7ad2bb5-d2b0-4697-bddb-4cc26152a6b6}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

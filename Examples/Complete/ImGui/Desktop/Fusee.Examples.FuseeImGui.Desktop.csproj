@@ -35,6 +35,7 @@
 		<ProjectReference Include="$(FuseeEngineRoot)\src\Base\Imp\Desktop\Fusee.Base.Imp.Desktop.csproj" />
 		<ProjectReference Include="$(FuseeEngineRoot)\src\Engine\Imp\Graphics\Desktop\Fusee.Engine.Imp.Graphics.Desktop.csproj" />
 		<ProjectReference Include="$(FuseeEngineRoot)\src\ImGui\Desktop\Fusee.ImGui.Desktop\Fusee.ImGuiDesktop.csproj" />
+		<ProjectReference Include="..\..\..\..\src\SqliteViewer\Core\Fusee.Examples.SQLiteViewer.Core.csproj" />
 	</ItemGroup>
 
 </Project>

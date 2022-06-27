@@ -8,7 +8,7 @@ using Fusee.Engine.Core.Effects;
 using Fusee.Math.Core;
 using Fusee.Serialization;
 
-namespace Fusee.Viewer.Core
+namespace Fusee.Examples.SQLiteViewer.Core
 {
     public static class SimpleMeshes 
     {

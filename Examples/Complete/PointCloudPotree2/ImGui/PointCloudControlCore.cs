@@ -54,6 +54,7 @@ namespace Fusee.Examples.PointCloudPotree2.PotreeImGui
 
         public override void Init()
         {
+
             try
             {
                 PtRenderingParams.Instance.DepthPassEf = MakePointCloudEffect.ForDepthPass(PtRenderingParams.Instance.Size, PtRenderingParams.Instance.PtMode, PtRenderingParams.Instance.Shape);
@@ -239,6 +240,7 @@ namespace Fusee.Examples.PointCloudPotree2.PotreeImGui
         // Is called when the window was resized
         protected override void Resize(int width, int height)
         {
+            Diagnostics.Warn("Resize called: " + width + "  " + height);
             if (width <= 0 || height <= 0)
                 return;
 

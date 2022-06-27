@@ -3,7 +3,7 @@ using Fusee.Engine.Core.ShaderShards;
 using Fusee.PointCloud.Common;
 using System;
 
-namespace Fusee.Viewer.Core
+namespace Fusee.Examples.SQLiteViewer.Core
 {
     public delegate void PointThresholdHandler(int val);
     public delegate void ProjectedSizeModifierHandler(float val);
@@ -15,6 +15,7 @@ namespace Fusee.Viewer.Core
         public PointThresholdHandler PointThresholdHandler;
         public ProjectedSizeModifierHandler ProjectedSizeModifierHandler;
 
+        //public string PathToOocFile = Path.Combine("Assets", "Cube1030301", "Potree");
         public string PathToOocFile = @"C:\Praktikum\datenbanken\potree\220202002-0000";
 
         public ShaderEffect DepthPassEf;

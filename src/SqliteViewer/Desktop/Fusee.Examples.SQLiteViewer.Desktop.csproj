@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Examples\Complete\SQLiteViewer\Fusee.Examples.SQLiteViewer.Base\Fusee.Examples.SQLiteViewer.NoGui.csproj" />
+    <ProjectReference Include="..\..\Base\Common\Fusee.Base.Common.csproj" />
+    <ProjectReference Include="..\..\Base\Core\Fusee.Base.Core.csproj" />
+    <ProjectReference Include="..\..\Base\Imp\Desktop\Fusee.Base.Imp.Desktop.csproj" />
+    <ProjectReference Include="..\..\Engine\Core\Fusee.Engine.Core.csproj" />
+    <ProjectReference Include="..\..\Engine\Imp\Graphics\Desktop\Fusee.Engine.Imp.Graphics.Desktop.csproj" />
+    <ProjectReference Include="..\..\ImGui\Desktop\Fusee.ImGui.Desktop\Fusee.ImGuiDesktop.csproj" />
+    <ProjectReference Include="..\..\PointCloud\Common\Fusee.PointCloud.Common.csproj" />
+    <ProjectReference Include="..\..\PointCloud\Core\Fusee.PointCloud.Core.csproj" />
+    <ProjectReference Include="..\..\PointCloud\Las\Desktop\Fusee.PointCloud.Las.Desktop.csproj" />
+    <ProjectReference Include="..\..\PointCloud\Potree\Fusee.PointCloud.Potree.csproj" />
+    <ProjectReference Include="..\..\Serialization\Fusee.Serialization.csproj" />
+    <ProjectReference Include="..\Core\Fusee.Examples.SQLiteViewer.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Base\Common\Fusee.Base.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Base\Core\Fusee.Base.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Engine\Common\Fusee.Engine.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Engine\Core\Fusee.Engine.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Engine\GUI\Fusee.Engine.Gui.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Engine\Imp\Graphics\Desktop\Fusee.Engine.Imp.Graphics.Desktop.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Math\Core\Fusee.Math.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\src\PointCloud\Common\Fusee.PointCloud.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\src\PointCloud\Core\Fusee.PointCloud.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\src\PointCloud\Las\Desktop\Fusee.PointCloud.Las.Desktop.csproj" />
+    <ProjectReference Include="..\..\..\..\src\PointCloud\Potree\Fusee.PointCloud.Potree.csproj" />
+  </ItemGroup>
+
+</Project>
