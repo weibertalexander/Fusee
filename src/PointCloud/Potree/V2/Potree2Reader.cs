@@ -59,6 +59,12 @@ namespace Fusee.PointCloud.Potree.V2
         private string _fileFolderPath;
         private string _metadataFilePath;
 
+
+        public double3 GetPointCloudOffset()
+        {
+            return _instance.Metadata.Offset;
+        }
+
         /// <summary>
         /// Returns the point type.
         /// </summary>

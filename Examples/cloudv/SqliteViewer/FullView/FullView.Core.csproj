@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\FuseeIconTop32.png" />
+    <None Remove="Assets\FuseeText.png" />
+    <None Remove="Assets\Lato-Black.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\FuseeIconTop32.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\FuseeText.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Lato-Black.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+	  <Content Include="Assets\"></Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Base\Common\Fusee.Base.Common.csproj" />
+    <ProjectReference Include="..\..\Base\Core\Fusee.Base.Core.csproj" />
+    <ProjectReference Include="..\..\Engine\Common\Fusee.Engine.Common.csproj" />
+    <ProjectReference Include="..\..\Engine\Core\Fusee.Engine.Core.csproj" />
+    <ProjectReference Include="..\..\Engine\GUI\Fusee.Engine.Gui.csproj" />
+    <ProjectReference Include="..\..\Math\Core\Fusee.Math.Core.csproj" />
+  </ItemGroup>
+
+</Project>

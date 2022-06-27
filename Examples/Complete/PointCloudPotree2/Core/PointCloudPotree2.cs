@@ -122,7 +122,7 @@ namespace Fusee.Examples.PointCloudPotree2.Core
                 }
             };
 
-            _camTransform.Translation = _initCameraPos = _pointCloud.Center - new float3(0, 0, _pointCloud.Size.z * 2);
+            _camTransform.Translation = _initCameraPos = _pointCloud.Center - new float3(_pointCloud.Size.x / 2, _pointCloud.Size.y/2, _pointCloud.Size.z / 2);
 
             _scene = new SceneContainer
             {

@@ -7,7 +7,7 @@ using System.IO;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace Fusee.Examples.FuseeImGui.Desktop
+namespace Fusee.Viewer.Core
 {
     [FuseeApplication(Name = "FUSEE ImGui Example",
         Description = "A very simple example how to use ImGui within a Fusee application.")]

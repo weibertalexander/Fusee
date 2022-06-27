@@ -2,9 +2,8 @@
 using Fusee.Engine.Core.ShaderShards;
 using Fusee.PointCloud.Common;
 using System;
-using System.IO;
 
-namespace Fusee.Examples.PointCloudPotree2.Core
+namespace Fusee.Viewer.Core
 {
     public delegate void PointThresholdHandler(int val);
     public delegate void ProjectedSizeModifierHandler(float val);
@@ -16,8 +15,8 @@ namespace Fusee.Examples.PointCloudPotree2.Core
         public PointThresholdHandler PointThresholdHandler;
         public ProjectedSizeModifierHandler ProjectedSizeModifierHandler;
 
-        //public string PathToOocFile = @"C:\Uni\Fusee\Examples\Complete\PointCloudPotree2\Core\Assets\Cube1030301\Potree\";
-        public string PathToOocFile = @"C:\Praktikum\datenbanken\potree\220202002-0000_0";
+        public string PathToOocFile = @"C:\Praktikum\datenbanken\potree\220202002-0000";
+
         public ShaderEffect DepthPassEf;
         public PointCloudSurfaceEffect ColorPassEf;
 
@@ -33,7 +32,7 @@ namespace Fusee.Examples.PointCloudPotree2.Core
             }
         }
 
-        private PointSizeMode _ptMode = PointSizeMode.FixedPixelSize;
+        private PointSizeMode _ptMode = PointSizeMode.FixedWorldSize;
         public PointSizeMode PtMode
         {
             get { return _ptMode; }
@@ -45,9 +44,10 @@ namespace Fusee.Examples.PointCloudPotree2.Core
             }
         }
 
+        //private PointColorMode _colorMode = PointColorMode.VertexColor0;
         private ColorMode _colorMode = ColorMode.VertexColor0;
 
-        public ColorMode PointCloudColorMode
+        public ColorMode ColorMode
         {
             get { return _colorMode; }
             set
@@ -57,7 +57,7 @@ namespace Fusee.Examples.PointCloudPotree2.Core
             }
         }
 
-        private int _size = 4;
+        private int _size = 6;
         public int Size
         {
             get { return _size; }
@@ -80,7 +80,7 @@ namespace Fusee.Examples.PointCloudPotree2.Core
             }
         }
 
-        private float _edlStrength = 0.03f;
+        private float _edlStrength = 0.3f;
         public float EdlStrength
         {
             get { return _edlStrength; }
@@ -91,7 +91,7 @@ namespace Fusee.Examples.PointCloudPotree2.Core
             }
         }
 
-        private float _projSizeMod = 0.0001f;
+        private float _projSizeMod = 0.001f;
         public float ProjectedSizeModifier
         {
             get { return _projSizeMod; }
@@ -102,7 +102,7 @@ namespace Fusee.Examples.PointCloudPotree2.Core
             }
         }
 
-        private int _ptThreshold = 1000000;
+        private int _ptThreshold = 100000;
 
         public int PointThreshold
         {
