@@ -13,8 +13,8 @@ using System.Threading.Tasks;
 
 namespace Fusee.Examples.SQLiteViewer.Core
 {
-    [FuseeApplication(Name = "FUSEE ImGui Example",
-        Description = "A very simple example how to use ImGui within a Fusee application.")]
+    [FuseeApplication(Name = "SQLite Pointcloud Viewer",
+        Description = "Converts SQLite into a viewable pointcloud.")]
     public class Core : RenderCanvas
     {
 
@@ -36,6 +36,8 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         private static Vector4 _ptColor = new(0, 0, 0, 1);
         private static bool _colorPickerOpen;
+
+        private static int _stepsize = 10;
 
         private static bool _isMouseInsideFuControl;
 
@@ -141,20 +143,67 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         internal void DrawGUI()
         {
+            ImGui.Begin("Controls");
+
+            ImGui.NewLine();
+
+            if (ImGui.Button("Jump to start"))
+            {
+                _sqliteViewerControl.OnBeginningDown();
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button("Back"))
+            {
+                _sqliteViewerControl.OnBackwardDown(_stepsize);
+            }
+
+            ImGui.SameLine();
+            if (!_sqliteViewerControl.IsPlaying)
+            {
+                //IntPtr img = IntPtr.Parse(Base.Core.AssetStorage.Get<Base.Core.ImageData>("play1.png").PixelData.ToString());
+                //IntPtr img = new IntPtr)
+                //if (ImGui.ImageButton(img, new Vector2(10, 10)))
+
+                if (ImGui.Button("Play"))
+                {
+                    _sqliteViewerControl.OnPlayDown();
+                }
+            }
+            else
+            {
+                if (ImGui.Button("Stop"))
+                {
+                    _sqliteViewerControl.OnPlayDown();
+                }
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button("Forward"))
+            {
+                _sqliteViewerControl.OnForwardDown(_stepsize);
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button("Jump to end"))
+            {
+                _sqliteViewerControl.OnEndDown();
+            }
+
+            ImGui.NewLine();
+            ImGui.Text($"Footpulse: {_sqliteViewerControl.Footpulse}");
+ 
+
             ImGui.Begin("Settings");
             ImGui.Text("Fusee PointCloud Rendering");
             ImGui.Text($"Application average {1000.0f / ImGui.GetIO().Framerate:0.00} ms/frame ({ImGui.GetIO().Framerate:0} FPS)");
+            
             ImGui.NewLine();
             if (ImGui.Button("Open File"))
             {
                 spwanOpenFilePopup = true;
             }
-            ImGui.SameLine();
 
-            if (ImGui.Button("Reset Camera"))
-            {
-                _sqliteViewerControl.ResetCamera();
-            }
             ImGui.SameLine();
 
             if (ImGui.Button("Show Octree"))
@@ -163,7 +212,13 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
 
             ImGui.NewLine();
+            ImGui.Text("Step size");
+            ImGui.InputInt("Step size", ref _stepsize, 1, 10);
+            if (_stepsize < 0) _stepsize = 0;
+
+            ImGui.NewLine();
             ImGui.Spacing();
+
             ImGui.BeginGroup();
             ImGui.Text("Visibility");
             ImGui.InputInt("Point threshold", ref _threshold, 1000, 10000);
@@ -313,7 +368,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                         _sqliteViewerControl = new SQLiteViewerControlCore(RC);
                         _sqliteViewerControl.Init();
                         _sqliteViewerControl.UpdateOriginalGameWindowDimensions(Width, Height);
-                        _sqliteViewerControl.ResetCamera();
+                        //_sqliteViewerControl.ResetCamera();
                         // reset color picker
                         _currentColorMode = 0;
                     }

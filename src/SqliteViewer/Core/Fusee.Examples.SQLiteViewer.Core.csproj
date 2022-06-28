@@ -16,10 +16,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="Assets\Cube1030301\Las\Cube1030301.las" />
-		<None Remove="Assets\Cube1030301\Potree\hierarchy.bin" />
-		<None Remove="Assets\Cube1030301\Potree\metadata.json" />
-		<None Remove="Assets\Cube1030301\Potree\octree.bin" />
 		<None Remove="Assets\FuseeIconTop32.png" />
 		<None Remove="Assets\FuseeText.png" />
 		<None Remove="Assets\Lato-Black.ttf" />

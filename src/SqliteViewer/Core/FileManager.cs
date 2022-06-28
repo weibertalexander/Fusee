@@ -121,30 +121,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
         // .sqlite -> .ply -> .laz -> octree
         public static void CreateOctreeFromDB(string filename)
         {
-            //_sqliteData = new SqliteData();
-
             string nameoffile = Path.GetFileNameWithoutExtension(filename);
-
-            SqliteConnection connection = new("Data Source=" + filename);
-            connection.Open();
-
-            // Create sqlite commands
-            SqliteCommand data = connection.CreateCommand();
-            data.CommandText = "SELECT data_points FROM Lichtraum";
-            SqliteDataReader data_reader = data.ExecuteReader();
-
-            SqliteCommand nop = connection.CreateCommand();
-            nop.CommandText = "SELECT number_of_points FROM Lichtraum";
-            SqliteDataReader nop_reader = nop.ExecuteReader();
-
-            SqliteCommand intensitydata = connection.CreateCommand();
-            intensitydata.CommandText = "SELECT intensity FROM Lichtraum";
-            SqliteDataReader intensity_reader = intensitydata.ExecuteReader();
-
-            SqliteCommand scannerid = connection.CreateCommand();
-            scannerid.CommandText = "SELECT scanner_id FROM Lichtraum";
-            SqliteDataReader scannerid_reader = scannerid.ExecuteReader();
-
             // Check if file is already converted and delete ply and laz files if they exist.
             if (Directory.Exists($"C:/Praktikum/datenbanken/potree/{nameoffile}"))
             {
@@ -159,9 +136,32 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 {
                     DeleteLAZ(nameoffile);
                 }
+                return;
             }
             else
             {
+
+                //_sqliteData = new SqliteData();
+                SqliteConnection connection = new("Data Source=" + filename);
+                connection.Open();
+
+                // Create sqlite commands
+                SqliteCommand data = connection.CreateCommand();
+                data.CommandText = "SELECT data_points FROM Lichtraum";
+                SqliteDataReader data_reader = data.ExecuteReader();
+
+                SqliteCommand nop = connection.CreateCommand();
+                nop.CommandText = "SELECT number_of_points FROM Lichtraum";
+                SqliteDataReader nop_reader = nop.ExecuteReader();
+
+                SqliteCommand intensitydata = connection.CreateCommand();
+                intensitydata.CommandText = "SELECT intensity FROM Lichtraum";
+                SqliteDataReader intensity_reader = intensitydata.ExecuteReader();
+
+                SqliteCommand scannerid = connection.CreateCommand();
+                scannerid.CommandText = "SELECT scanner_id FROM Lichtraum";
+                SqliteDataReader scannerid_reader = scannerid.ExecuteReader();
+
                 int scanner0 = 0;
                 int scanner1 = 0;
                 int scanner2 = 0;
@@ -170,6 +170,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 int scanner9 = 0;
                 //int error = 0;
 
+                // Count the amount of points per scanner channel.
                 while (scannerid_reader.Read())
                 {
                     byte[] scanneridblob = (byte[])scannerid_reader.GetValue(0);
@@ -222,6 +223,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 FileStream fstream8 = new FileStream($"{_dbdirectory}/ply/{nameoffile}_HRS1.ply", FileMode.Append);
                 FileStream fstream9 = new FileStream($"{_dbdirectory}/ply/{nameoffile}_HRS2.ply", FileMode.Append);
 
+                // Write data to ply files.
                 while (data_reader.Read() && intensity_reader.Read() && scannerid_reader.Read())
                 {
                     byte[] datablob = (byte[])data_reader.GetValue(0);
@@ -268,93 +270,96 @@ namespace Fusee.Examples.SQLiteViewer.Core
                             current.WriteByte(intensityblob[2 * i + j]);
                         }
                     }
-                }
 
-                fstream0.Close();
-                fstream1.Close();
-                fstream2.Close();
-                fstream3.Close();
-                fstream8.Close();
-                fstream9.Close();
+                    fstream0.Close();
+                    fstream1.Close();
+                    fstream2.Close();
+                    fstream3.Close();
+                    fstream8.Close();
+                    fstream9.Close();
 
-                string[] scannerFiles =
-                {
-                $"HSPA-Master",
-                $"HSPA-Slave",
-                $"HSPB-Master",
-                $"HSPB-Slave",
-                $"HRS1",
-                $"HRS2"
-            };
+                    string[] scannerFiles =
+                    {
+                        $"HSPA-Master",
+                        $"HSPA-Slave",
+                        $"HSPB-Master",
+                        $"HSPB-Slave",
+                        $"HRS1",
+                        $"HRS2"
+                    };
 
-                foreach (string file in scannerFiles)
-                {
+                    // Generate las files from ply with cloudcompare.
+                    foreach (string file in scannerFiles)
+                    {
+                        System.Diagnostics.Process processCC = new System.Diagnostics.Process();
+                        System.Diagnostics.ProcessStartInfo startInfoCC = new System.Diagnostics.ProcessStartInfo("cmd.exe");
+                        startInfoCC.Arguments = $"/C {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_{file}.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SET_ACTIVE_SF 0 -SF_CONVERT_TO_RGB FALSE -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.las";
+                        processCC.StartInfo = startInfoCC;
+                        processCC.Start();
+                        processCC.WaitForExit();
+                        processCC.Close();
+                    }
+
+                    /*
+                    // Generate bat file to convert pointclouds at the same time.
+                    string plyToLazBat = $"C:/Praktikum/datenbanken/ply/{nameoffile}.bat";
+                    using (StreamWriter batFile = new StreamWriter(plyToLazBat))
+                    {
+                        batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HSPA-Master.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HSPA-Master.laz");
+                        batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HSPA-Slave.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HSPA-Slave.laz");
+                        batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HSPB-Master.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HSPB-Master.laz");
+                        batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HSPB-Slave.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HSPB-Slave.laz");
+                        batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HRS1.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HRS1.laz");
+                        batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HRS2.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HRS2.laz");
+                    }
+                    // Generate laz file from ply using CloudCompare.
                     System.Diagnostics.Process processCC = new System.Diagnostics.Process();
-                    System.Diagnostics.ProcessStartInfo startInfoCC = new System.Diagnostics.ProcessStartInfo("cmd.exe");
-                    startInfoCC.Arguments = $"/C {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_{file}.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SET_ACTIVE_SF 0 -SF_CONVERT_TO_RGB FALSE -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.las";
+                    System.Diagnostics.ProcessStartInfo startInfoCC = new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + plyToLazBat);
+
+                    startInfoCC.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+
                     processCC.StartInfo = startInfoCC;
                     processCC.Start();
                     processCC.WaitForExit();
-                    processCC.Close();
-                }
 
-                /*
-                string plyToLazBat = $"C:/Praktikum/datenbanken/ply/{nameoffile}.bat";
-                using (StreamWriter batFile = new StreamWriter(plyToLazBat))
-                {
-                    batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HSPA-Master.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HSPA-Master.laz");
-                    batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HSPA-Slave.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HSPA-Slave.laz");
-                    batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HSPB-Master.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HSPB-Master.laz");
-                    batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HSPB-Slave.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HSPB-Slave.laz");
-                    batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HRS1.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HRS1.laz");
-                    batFile.WriteLine($"START {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_HRS2.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_HRS2.laz");
-                }
-                // Generate laz file from ply using CloudCompare.
-                System.Diagnostics.Process processCC = new System.Diagnostics.Process();
-                System.Diagnostics.ProcessStartInfo startInfoCC = new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + plyToLazBat);
+                    */
+                    // Generate octrees from las.
+                    foreach (string file in scannerFiles)
+                    {
+                        System.Diagnostics.Process processPT = new System.Diagnostics.Process();
+                        System.Diagnostics.ProcessStartInfo startInfoPT = new System.Diagnostics.ProcessStartInfo("cmd.exe");
+                        startInfoPT.Arguments = $"/C {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.las -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_{file}";
+                        processPT.StartInfo = startInfoPT;
+                        processPT.Start();
+                        processPT.WaitForExit();
+                        processPT.Close();
+                    }
 
-                startInfoCC.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                    /*
+                    // Generate bat file to get octrees from laz.
+                    string lazToOctreeBat = $"C:/Praktikum/datenbanken/laz/{nameoffile}.bat";
+                    using (StreamWriter batFile = new StreamWriter(lazToOctreeBat))
+                    {
+                        batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HSPA-Master.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HSPA-Master");
+                        batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HSPA-Slave.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HSPA-Slave");
+                        batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HSPB-Master.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HSPB-Master");
+                        batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HSPB-Slave.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HSPB-Slave");
+                        batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HRS1.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HRS1");
+                        batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HRS2.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HRS2");
+                    }
 
-                processCC.StartInfo = startInfoCC;
-                processCC.Start();
-                processCC.WaitForExit();
-
-                */
-
-
-                foreach (string file in scannerFiles)
-                {
+                    // Generate octrees from LAZ
                     System.Diagnostics.Process processPT = new System.Diagnostics.Process();
-                    System.Diagnostics.ProcessStartInfo startInfoPT = new System.Diagnostics.ProcessStartInfo("cmd.exe");
-                    startInfoPT.Arguments = $"/C {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.las -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_{file}";
+                    System.Diagnostics.ProcessStartInfo startInfoPT = new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + lazToOctreeBat);
+
+                    startInfoPT.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+
                     processPT.StartInfo = startInfoPT;
                     processPT.Start();
                     processPT.WaitForExit();
-                    processPT.Close();
+                    */
                 }
 
-                /*
-                string lazToOctreeBat = $"C:/Praktikum/datenbanken/laz/{nameoffile}.bat";
-                using (StreamWriter batFile = new StreamWriter(lazToOctreeBat))
-                {
-                    batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HSPA-Master.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HSPA-Master");
-                    batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HSPA-Slave.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HSPA-Slave");
-                    batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HSPB-Master.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HSPB-Master");
-                    batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HSPB-Slave.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HSPB-Slave");
-                    batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HRS1.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HRS1");
-                    batFile.WriteLine($"START {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_HRS2.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_HRS2");
-                }
-
-                // Generate octrees from LAZ
-                System.Diagnostics.Process processPT = new System.Diagnostics.Process();
-                System.Diagnostics.ProcessStartInfo startInfoPT = new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + lazToOctreeBat);
-
-                startInfoPT.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-
-                processPT.StartInfo = startInfoPT;
-                processPT.Start();
-                processPT.WaitForExit();
-                */
             }
         }
 
@@ -366,6 +371,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             Directory.CreateDirectory($"{_dbdirectory}/potree/");
         }
 
+        // Creates the header of a ply file.
         private static void CreatePLYFile(long amount, string filename)
         {
             Diagnostics.Debug("Pointamount: " + amount);
@@ -385,6 +391,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             File.WriteAllLines(path, header);
         }
 
+        // Write to ply file. Too slow because for every byte an fstream is opened and closed.
         private static void WriteToPLYFile(byte data, string filename, int scannerID)
         {
             string path;
@@ -425,35 +432,18 @@ namespace Fusee.Examples.SQLiteViewer.Core
             fstream.Close();
         }
 
+        // Delete ply files after converting to las.
         private static void DeletePLY(string filename)
         {
             File.Delete($"C:/Praktikum/datenbanken/ply/{filename}.ply");
             Diagnostics.Debug($"Deleted {filename}.ply.");
         }
 
+        // Delete las/laz files after converting to octree.
         private static void DeleteLAZ(string filename)
         {
             File.Delete($"C:/Praktikum/datenbanken/laz/{filename}.laz");
             Diagnostics.Debug($"Deleted {filename}.laz.");
-        }
-
-        // Return a list of given amount of directory paths of octrees starting at given footpulse.
-        // Not working currently as name format is not working as intended.
-        public static string[] ReturnFiles(int footpulse, int max)
-        {
-            string[] result = new string[max];
-            string[] dirs = Directory.GetDirectories(_convertedDirectory);
-            // Round given footpulse to nearest footpulsesize.
-            int index = (int)System.Math.Round((double)footpulse / _footpulseSize);
-            int c = 0;
-            for (int i = index; i < index + max; i++)
-            {
-                DirectoryInfo info = new DirectoryInfo(dirs[i]);
-                string dirName = info.Name;
-                result[c] = dirName;
-                c++;
-            }
-            return result;
         }
     }
 }

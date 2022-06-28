@@ -15,7 +15,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
         public PointThresholdHandler PointThresholdHandler;
         public ProjectedSizeModifierHandler ProjectedSizeModifierHandler;
 
-        //public string PathToOocFile = Path.Combine("Assets", "Cube1030301", "Potree");
+        // Currently depending on my system, will be changed later.
         public string PathToOocFile = @"C:\Praktikum\datenbanken\potree\220202002-0000";
 
         public ShaderEffect DepthPassEf;

@@ -397,6 +397,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         // Attempt with multiple pointclouds: Add pointcloud to scene based on z position. Add or remove scenenodes
         // using this basis.
+        /*
         private void PointcloudsToScene()
         {
             string[] newfiles = FileManager.ReturnFiles((int)_camZ, 3);
@@ -460,6 +461,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 }
             }
         }
+        */
 
         // Add a pointcloud to the scene based on current z / footpulse position.
         public void SetPointcloud()
@@ -767,6 +769,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             _camera2Transform.Translation = _initialCamTransform;
         }
 
+        // Press Keyboard Buttons (1, 2, 3, 4, 8, 9) to turn on/off corresponding pointcloud.
         public void ToggleScannerChannel()
         {
             if (_scannerChannelCooldown <= 0)
@@ -800,21 +803,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
             _scannerChannelCooldown -= Time.DeltaTime;
         }
 
-        // Change the colormode of the pointcloud. Not working yet.
-        private void ChangeColorMode()
-        {
-            if (Keyboard.GetKey(KeyCodes.Up))
-            {
-                //PtRenderingParams.Instance.ColorMode = PointColorMode.Single;
-                PtRenderingParams.Instance.ColorPassEf = MakePointCloudEffect.ForColorPass(PtRenderingParams.Instance.Size, PtRenderingParams.Instance.ColorMode, PtRenderingParams.Instance.PtMode, PtRenderingParams.Instance.Shape, PtRenderingParams.Instance.EdlStrength, PtRenderingParams.Instance.EdlNoOfNeighbourPx);
-            }
-            if (Keyboard.GetKey(KeyCodes.Down))
-            {
-                //PtRenderingParams.Instance.ColorMode = PointColorMode.VertexColor0;
-                PtRenderingParams.Instance.ColorPassEf = MakePointCloudEffect.ForColorPass(PtRenderingParams.Instance.Size, PtRenderingParams.Instance.ColorMode, PtRenderingParams.Instance.PtMode, PtRenderingParams.Instance.Shape, PtRenderingParams.Instance.EdlStrength, PtRenderingParams.Instance.EdlNoOfNeighbourPx);
-            }
-        }
-
         #endregion Interactions
         private void OnThresholdChanged(int newValue)
         {
@@ -829,9 +817,8 @@ namespace Fusee.Examples.SQLiteViewer.Core
         {
 
             if (PtRenderingParams.Instance.EdlStrength == 0f) return;
-            Diagnostics.Warn(_camera.Viewport + "  " + Width * (_camera.Viewport.z / 100) + "   " + Height * (_camera.Viewport.w / 100));
+            // Adjust width and height of depthtex to accomodate for resized viewport.
             PtRenderingParams.Instance.ColorPassEf.DepthTex = WritableTexture.CreateDepthTex((int)(Width * (_camera.Viewport.z / 100)), (int)(Height * (_camera.Viewport.w / 100)), new ImagePixelFormat(ColorFormat.Depth24));
-            //PtRenderingParams.Instance.ColorPassEf.DepthTex = WritableTexture.CreateDepthTex((int)(Width), (int)(Height), new ImagePixelFormat(ColorFormat.Depth24));
         }
     }
 
