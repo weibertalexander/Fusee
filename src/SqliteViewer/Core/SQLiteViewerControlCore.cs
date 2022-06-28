@@ -433,6 +433,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _camera2Transform.Translate(new float3(0, 0, Time.DeltaTime * _speed));
             }
 
+            // Controls with left mouse button.
             if (Input.Mouse.LeftButton)
             {
                 // Store mouse position when clicked.
@@ -474,7 +475,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _isMouseDown = false;
             }
 
-            // Mouse is over 2D camera.
+            // Zoom and controls with right mouse button over 2D camera.
             if (Input.Mouse.Position.y <= (_height / 100 * (100 - _mainCamViewportSize)))
             {
                 // 2D Rotation with right mouse button.
@@ -505,7 +506,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
 
             }
-            // Mouse is over 3D camera.
+            // Zoom over 3D camera.
             else
             {
                 if (allowInput)
