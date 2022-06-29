@@ -192,12 +192,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
             ImGui.NewLine();
             ImGui.Text($"Footpulse: {_sqliteViewerControl.Footpulse}");
- 
+
 
             ImGui.Begin("Settings");
             ImGui.Text("Fusee PointCloud Rendering");
             ImGui.Text($"Application average {1000.0f / ImGui.GetIO().Framerate:0.00} ms/frame ({ImGui.GetIO().Framerate:0} FPS)");
-            
+
             ImGui.NewLine();
             if (ImGui.Button("Open File"))
             {
@@ -292,26 +292,24 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _ => ColorMode.VertexColor0
             };
 
-            if (_currentColorMode == (int)ColorMode.BaseColor)
+            ImGui.Spacing();
+            ImGui.BeginGroup();
+            ImGui.Text("Color picker");
+
+            if (ImGui.ColorButton("Toggle Color Picker", _ptColor, ImGuiColorEditFlags.DefaultOptions, Vector2.One * 50))
             {
-                ImGui.Spacing();
-                ImGui.BeginGroup();
-                ImGui.Text("Color picker");
-
-                if (ImGui.ColorButton("Toggle Color Picker", _ptColor, ImGuiColorEditFlags.DefaultOptions, Vector2.One * 50))
-                {
-                    _colorPickerOpen = !_colorPickerOpen;
-                }
-                if (_colorPickerOpen)
-                {
-                    ImGui.Begin("Color Picker", ref _colorPickerOpen, ImGuiWindowFlags.AlwaysAutoResize);
-                    ImGui.ColorPicker4("Color", ref _ptColor);
-                    ImGui.End();
-
-                    PtRenderingParams.Instance.ColorPassEf.SurfaceInput.Albedo = _ptColor.ToFuseeVector();
-                }
-                ImGui.EndGroup();
+                _colorPickerOpen = !_colorPickerOpen;
             }
+            if (_colorPickerOpen)
+            {
+                ImGui.Begin("Color Picker", ref _colorPickerOpen, ImGuiWindowFlags.AlwaysAutoResize);
+                ImGui.ColorPicker4("Color", ref _ptColor);
+                ImGui.End();
+
+                _sqliteViewerControl.CameraBackgroundColor = _ptColor.ToFuseeVector();
+                //PtRenderingParams.Instance.ColorPassEf.SurfaceInput.Albedo = _ptColor.ToFuseeVector();
+            }
+            ImGui.EndGroup();
 
             ImGui.EndGroup();
             ImGui.End();
@@ -353,18 +351,21 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
             if (ImGui.BeginPopupModal("open-file", ref filePickerOpen, ImGuiWindowFlags.NoTitleBar))
             {
-                var picker = ImGuiFileDialog.GetFilePicker(this, Path.Combine(Environment.CurrentDirectory, ""), new float4(30, 180, 30, 255), ".json");
+                var picker = ImGuiFileDialog.GetFilePicker(this, Path.Combine(Environment.CurrentDirectory, ""), new float4(30, 180, 30, 255), ".sqlite");
                 if (picker.Draw())
                 {
                     if (string.IsNullOrWhiteSpace(picker.SelectedFile)) return;
 
                     var file = picker.SelectedFile;
+                    Path.GetFileNameWithoutExtension(file);
 
-                    PtRenderingParams.Instance.PathToOocFile = new FileInfo(file).Directory.FullName;
+                    PtRenderingParams.Instance.PathToOocFile = FileManager.ConvertedDirectory + "/" + Path.GetFileNameWithoutExtension(file);
+                    PtRenderingParams.Instance.PathToSqliteFile = file;
 
                     if (_sqliteViewerControl != null)
                     {
                         _sqliteViewerControl.Dispose();
+                        
                         _sqliteViewerControl = new SQLiteViewerControlCore(RC);
                         _sqliteViewerControl.Init();
                         _sqliteViewerControl.UpdateOriginalGameWindowDimensions(Width, Height);

@@ -23,8 +23,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
         private static float _angleHorz, _angleVert, _angleVelHorz, _angleVelVert;
         private const float RotationSpeed = 7;
 
-        public string _filename;
-
         private SceneContainer _scene;
 
         // Rendering related.
@@ -46,6 +44,18 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         private SceneNode _coordinateAxes;
         private Transform _coordinateAxesTransform;
+
+        private float4 _cameraBackgroundColor = (float4)ColorUint.Black;
+
+        public float4 CameraBackgroundColor {
+            get { return _cameraBackgroundColor; }
+            set
+            {
+                _cameraBackgroundColor = value;
+                 _camera.BackgroundColor = value;
+                 _camera2.BackgroundColor = value;
+            }
+        }
 
         // Pointcloud related.
         private Potree2Reader _reader1 = new();  // This and following are used with multiple pointclouds.
@@ -112,7 +122,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 PtRenderingParams.Instance.PointThresholdHandler = OnThresholdChanged;
                 PtRenderingParams.Instance.ProjectedSizeModifierHandler = OnProjectedSizeModifierChanged;
 
-                _filename = Path.GetFileName(FileManager.GetSqliteFiles()[0]);
 
                 _scene = new SceneContainer();
 
@@ -122,15 +131,17 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
                 //PlaceOriginPoint();
 
-                //FileManager.CreateDirectories();
-
-                FileManager.CreateOctreeFromDB(FileManager.GetSqliteFiles()[0]);
-                PtRenderingParams.Instance.PathToOocFile = Directory.GetDirectories(FileManager.GetConvDir())[0];
+                FileManager.CreateDirectories();
+                if (PtRenderingParams.Instance.PathToOocFile != "")
+                {
+                    Diagnostics.Debug(PtRenderingParams.Instance.PathToOocFile);
+                    FileManager.CreateOctreeFromDB(PtRenderingParams.Instance.PathToSqliteFile);
+                }
 
                 InitPointClouds();
 
                 _sceneRenderer = new SceneRendererForward(_scene);
-                Diagnostics.Warn(_sceneRenderer);
+
                 PointCloudRenderModule module = new PointCloudRenderModule(true);
 
                 _sceneRenderer.VisitorModules.Add(module);
@@ -153,14 +164,14 @@ namespace Fusee.Examples.SQLiteViewer.Core
             _camera = new Camera(ProjectionMethod.Perspective, 0.1f, 300, M.PiOver4, RenderLayers.Layer01)
             {
                 Layer = 1,
-                BackgroundColor = (float4)ColorUint.Black,
+                BackgroundColor = _cameraBackgroundColor,
             };
 
             // 2D camera.
             _camera2 = new Camera(ProjectionMethod.Orthographic, 1f, 2f, M.PiOver4, RenderLayers.Layer01)
             {
                 Layer = 1,
-                BackgroundColor = (float4)ColorUint.Black,
+                BackgroundColor = _cameraBackgroundColor,
 
                 Scale = 0.05f
             };
@@ -257,13 +268,14 @@ namespace Fusee.Examples.SQLiteViewer.Core
             cam2.Children.Add(camera2Boundaries);
 
             // Set viewports: 2D camera is on top of 3D cameras viewport, axes camera is on the right side of 2D cameras viewport.
-            _camera.Viewport = new float4(0, 0, 100, _mainCamViewportSize);
-            _camera2.Viewport = new float4(0, _mainCamViewportSize, 100, 100 - _mainCamViewportSize);
-            _camera3.Viewport = new float4(_mainCamViewportSize + ((100 - _mainCamViewportSize) / 4), _mainCamViewportSize + ((100 - _mainCamViewportSize) / 4), 15, 15);
+            //_camera.Viewport = new float4(0, 0, 100, _mainCamViewportSize);
+            _camera.Viewport = new float4(0, 0, 100, 100);
+            //_camera2.Viewport = new float4(0, _mainCamViewportSize, 100, 100 - _mainCamViewportSize);
+            //_camera3.Viewport = new float4(_mainCamViewportSize + ((100 - _mainCamViewportSize) / 4), _mainCamViewportSize + ((100 - _mainCamViewportSize) / 4), 15, 15);
 
             _scene.Children.Add(cam);
-            _scene.Children.Add(cam2);
-            _scene.Children.Add(cam3);
+            //_scene.Children.Add(cam2);
+            //_scene.Children.Add(cam3);
         }
 
         // Initialize coordinate axes, which will rotate according to 2D cameras viewing direction.
@@ -348,8 +360,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
                 _pointCloudComponentList[i].Camera = _camera;
 
-                Diagnostics.Warn(readerList[i].GetPointCloudOffset());
-
                 Transform cloudTransform = new Transform()
                 {
                     Scale = float3.One,
@@ -399,15 +409,15 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 PtRenderingParams.Instance.DepthPassEf.Active = true;
                 PtRenderingParams.Instance.ColorPassEf.Active = false;
 
-                _camera.Viewport = new float4(0, 0, 100, 100);  // If Viewport is not "reset", the DepthTex will be rendered to only half of the camera (?????).
+                //_camera.Viewport = new float4(0, 0, 100, 100);  // If Viewport is not "reset", the DepthTex will be rendered to only half of the camera (?????).
                 _camera.RenderTexture = PtRenderingParams.Instance.ColorPassEf.DepthTex;
 
                 _sceneRenderer.Render(_rc);
 
-                _camera.Viewport = new float4(0, 0, 100, _mainCamViewportSize);
+                //_camera.Viewport = new float4(0, 0, 100, _mainCamViewportSize);
                 //_camera2.Viewport = new float4(0, _mainCamViewportSize, 100, 100 - _mainCamViewportSize);
 
-                //_camera.RenderTexture = null;
+                _camera.RenderTexture = null;
                 //_camera2.RenderTexture = null;
 
                 PtRenderingParams.Instance.DepthPassEf.Active = false;

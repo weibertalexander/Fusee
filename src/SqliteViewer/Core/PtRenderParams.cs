@@ -17,6 +17,10 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         // Currently depending on my system, will be changed later.
         public string PathToOocFile = @"C:\Praktikum\datenbanken\potree\220202002-0000";
+        //public string PathToOocFile = "";
+
+        public string PathToSqliteFile = "";
+        //public string PathToOocFile = "";
 
         public ShaderEffect DepthPassEf;
         public PointCloudSurfaceEffect ColorPassEf;
