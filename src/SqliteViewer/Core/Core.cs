@@ -53,6 +53,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
             _sqliteViewerControl = new SQLiteViewerControlCore(RC);
             _sqliteViewerControl.Init();
+
             await base.InitAsync();
 
         }
@@ -60,6 +61,25 @@ namespace Fusee.Examples.SQLiteViewer.Core
         public override void Update()
         {
             _sqliteViewerControl.Update(_isMouseInsideFuControl);
+
+            if (Int32.Parse(_sqliteViewerControl.CurrentFootpulse) >= _sqliteViewerControl.EndFootpulse)
+            {
+                if (File.Exists(FileManager.GetDBDir() + "/" + FileManager.NextFile))
+                {
+                    PtRenderingParams.Instance.PathToOocFile = FileManager.ConvertedDirectory + "/" + Path.GetFileNameWithoutExtension(FileManager.NextFile);
+                    PtRenderingParams.Instance.PathToSqliteFile = FileManager.GetDBDir() + FileManager.NextFile;
+
+                    _sqliteViewerControl.Dispose();
+                    _sqliteViewerControl = new SQLiteViewerControlCore(RC);
+                    _sqliteViewerControl.Init();
+                    _sqliteViewerControl.UpdateOriginalGameWindowDimensions(Width, Height);
+
+                }
+                else
+                {
+                    Fusee.Base.Core.Diagnostics.Warn("Next sqlite file not found.");
+                }
+            }
         }
 
         public override void Resize(ResizeEventArgs e)
@@ -191,12 +211,15 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
 
             ImGui.NewLine();
-            ImGui.Text($"Footpulse: {_sqliteViewerControl.Footpulse}");
+            ImGui.InputInt("Step size", ref _stepsize, 1, 10);
+            if (_stepsize < 0) _stepsize = 0;
 
 
-            ImGui.Begin("Settings");
-            ImGui.Text("Fusee PointCloud Rendering");
-            ImGui.Text($"Application average {1000.0f / ImGui.GetIO().Framerate:0.00} ms/frame ({ImGui.GetIO().Framerate:0} FPS)");
+            ImGui.NewLine();
+            ImGui.Text($"Footpulse: {_sqliteViewerControl.CurrentFootpulse}");
+
+            ImGui.NewLine();
+            ImGui.Text($"Current DB: {Path.GetFileName(PtRenderingParams.Instance.PathToSqliteFile)}");
 
             ImGui.NewLine();
             if (ImGui.Button("Open File"))
@@ -204,17 +227,16 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 spwanOpenFilePopup = true;
             }
 
-            ImGui.SameLine();
+            ImGui.Begin("Settings");
+            ImGui.Text("Fusee PointCloud Rendering");
+            ImGui.Text($"Application average {1000.0f / ImGui.GetIO().Framerate:0.00} ms/frame ({ImGui.GetIO().Framerate:0} FPS)");
+
+            ImGui.NewLine();
 
             if (ImGui.Button("Show Octree"))
             {
                 // not implemented
             }
-
-            ImGui.NewLine();
-            ImGui.Text("Step size");
-            ImGui.InputInt("Step size", ref _stepsize, 1, 10);
-            if (_stepsize < 0) _stepsize = 0;
 
             ImGui.NewLine();
             ImGui.Spacing();
@@ -365,13 +387,13 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     if (_sqliteViewerControl != null)
                     {
                         _sqliteViewerControl.Dispose();
-                        
+
                         _sqliteViewerControl = new SQLiteViewerControlCore(RC);
                         _sqliteViewerControl.Init();
                         _sqliteViewerControl.UpdateOriginalGameWindowDimensions(Width, Height);
                         //_sqliteViewerControl.ResetCamera();
                         // reset color picker
-                        _currentColorMode = 0;
+                        _currentColorMode = 1;
                     }
                     ImGuiFileDialog.RemoveFilePicker(this);
                 }

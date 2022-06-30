@@ -47,29 +47,32 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         private float4 _cameraBackgroundColor = (float4)ColorUint.Black;
 
-        public float4 CameraBackgroundColor {
+        public float4 CameraBackgroundColor
+        {
             get { return _cameraBackgroundColor; }
             set
             {
                 _cameraBackgroundColor = value;
-                 _camera.BackgroundColor = value;
-                 _camera2.BackgroundColor = value;
+                _camera.BackgroundColor = value;
+                _camera2.BackgroundColor = value;
             }
         }
 
         // Pointcloud related.
-        private Potree2Reader _reader1 = new();  // This and following are used with multiple pointclouds.
-        private Potree2Reader _reader2 = new();
-        private Potree2Reader _reader3 = new();
-        private Potree2Reader _reader4 = new();
-        private Potree2Reader _reader8 = new();
-        private Potree2Reader _reader9 = new();
-
+        private Potree2Reader[] _readerList;
         private PointCloudComponent[] _pointCloudComponentList;
 
-        public String Footpulse
+        private int _startFootpulse;
+        private int _endFootpulse;
+
+        public String CurrentFootpulse
         {
-            get { return ((int)_cameraTransform.Translation.z).ToString(); }
+            get { return ((int)_cameraTransform.Translation.z + _startFootpulse).ToString(); }
+        }
+
+        public int EndFootpulse
+        {
+            get { return _endFootpulse; }
         }
 
         private bool _keys;
@@ -132,11 +135,11 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 //PlaceOriginPoint();
 
                 FileManager.CreateDirectories();
-                if (PtRenderingParams.Instance.PathToOocFile != "")
-                {
-                    Diagnostics.Debug(PtRenderingParams.Instance.PathToOocFile);
-                    FileManager.CreateOctreeFromDB(PtRenderingParams.Instance.PathToSqliteFile);
-                }
+
+                FileManager.CreateOctreeFromDB(PtRenderingParams.Instance.PathToSqliteFile);
+
+                _startFootpulse = FileManager.FootpulseStart;
+                _endFootpulse = FileManager.FootpulseEnd;
 
                 InitPointClouds();
 
@@ -150,7 +153,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
             catch (Exception ex)
             {
-                Diagnostics.Error("Error loading potree2 file", ex);
+                Diagnostics.Error(ex);
                 _sceneRenderer = new SceneRendererForward(new SceneContainer());
             }
         }
@@ -161,7 +164,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             _initialCamTransform = new float3(0, 5, 0);
 
             // 3D camera.
-            _camera = new Camera(ProjectionMethod.Perspective, 0.1f, 300, M.PiOver4, RenderLayers.Layer01)
+            _camera = new Camera(ProjectionMethod.Perspective, 0.1f, 150, M.PiOver4, RenderLayers.Layer01)
             {
                 Layer = 1,
                 BackgroundColor = _cameraBackgroundColor,
@@ -350,11 +353,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
         private void InitPointClouds()
         {
             string[] directories = Directory.GetDirectories(PtRenderingParams.Instance.PathToOocFile);
-            Potree2Reader[] readerList = { _reader1, _reader2, _reader3, _reader4, _reader8, _reader9 };
+            _readerList = new Potree2Reader[6];
             _pointCloudComponentList = new PointCloudComponent[6];
             for (int i = 0; i < directories.Length; i++)
             {
-                _pointCloudComponentList[i] = (PointCloudComponent)readerList[i].GetPointCloudComponent(directories[i]);
+                _readerList[i] = new Potree2Reader();
+                _pointCloudComponentList[i] = (PointCloudComponent)_readerList[i].GetPointCloudComponent(directories[i]);
                 _pointCloudComponentList[i].PointCloudImp.MinProjSizeModifier = PtRenderingParams.Instance.ProjectedSizeModifier;
                 _pointCloudComponentList[i].PointCloudImp.PointThreshold = PtRenderingParams.Instance.PointThreshold;
 
@@ -363,7 +367,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 Transform cloudTransform = new Transform()
                 {
                     Scale = float3.One,
-                    Translation = new float3((float)readerList[i].GetPointCloudOffset().x, (float)readerList[i].GetPointCloudOffset().y, (float)readerList[i].GetPointCloudOffset().z),
+                    Translation = new float3((float)_readerList[i].GetPointCloudOffset().x, (float)_readerList[i].GetPointCloudOffset().y, (float)_readerList[i].GetPointCloudOffset().z),
                     Rotation = new float3(0, 0, 0)
                 };
 
@@ -379,7 +383,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
                         _pointCloudComponentList[i]
                     }
                 };
-
                 _scene.Children.Add(cloud);
             }
         }
@@ -493,7 +496,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 {
                     _camera2Transform.Rotate(new float3(0, Input.Mouse.Velocity.x * Time.DeltaTime * _camera2MouseSensitivity * 0.2f, 0));
 
-                    Diagnostics.Debug(_camera2Transform.Rotation.y);
                     // Clamp camera angle.
                     if ((_camera2Transform.Rotation.y % M.PiOver2) > -0.05f && (_camera2Transform.Rotation.y % M.PiOver2) < 0.05)
                     {
@@ -596,7 +598,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
         // Is called when the window was resized
         protected override void Resize(int width, int height)
         {
-            Diagnostics.Warn("resize called: " + width + " " + height);
             if (width <= 0 || height <= 0)
                 return;
 
@@ -616,49 +617,33 @@ namespace Fusee.Examples.SQLiteViewer.Core
         public void ResetCamera()
         {
             _cameraTransform.Translation = _initCameraPos;
-            _angleHorz = _angleVert = 0;
             //_cameraTransform.FpsView(_angleHorz, _angleVert, Input.Keyboard.WSAxis, Input.Keyboard.ADAxis, Time.DeltaTimeUpdate * 20);
         }
 
         public void OnPlayDown()
         {
-            Diagnostics.Debug("Start Button");
             _isPlaying = !_isPlaying;
-            Diagnostics.Debug(_isPlaying);
-            //if (_isPlaying)
-            //{
-            //    _canvasNode.Children.Remove(_playNode);
-            //    _canvasNode.Children.Add(_stopNode);
-            //}
-            //else
-            //{
-            //    _canvasNode.Children.Remove(_stopNode);
-            //    _canvasNode.Children.Add(_playNode);
-            //}
         }
 
         public void OnForwardDown(int value)
         {
-            Diagnostics.Debug("Forward button");
             _cameraTransform.Translate(new float3(0, 0, value));
-            _camera2Transform.Translate(new float3(0, 0, value));
+            //_camera2Transform.Translate(new float3(0, 0, value));
         }
 
         public void OnBackwardDown(int value)
         {
-            Diagnostics.Debug("Backward button");
             _cameraTransform.Translate(new float3(0, 0, -value));
-            _camera2Transform.Translate(new float3(0, 0, -value));
+            //_camera2Transform.Translate(new float3(0, 0, -value));
         }
 
         public void OnEndDown()
         {
-            Diagnostics.Debug("End button");
+            _cameraTransform.Translation = new float3(_cameraTransform.Translation.x, _cameraTransform.Translation.y, _endFootpulse - 10);
         }
 
         public void OnBeginningDown()
         {
-            Diagnostics.Debug("Beginning button");
             _cameraTransform.Translation = _initialCamTransform;
             _camera2Transform.Translation = _initialCamTransform;
         }

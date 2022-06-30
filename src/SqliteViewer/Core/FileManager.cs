@@ -21,7 +21,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
         }
 
         private static string _dbdirectory = "C:/Praktikum/datenbanken/";
-        public static string dbDirectory
+        public static string DbDirectory
         {
             get { return _dbdirectory; }
         }
@@ -58,6 +58,60 @@ namespace Fusee.Examples.SQLiteViewer.Core
         public static string[] GetSqliteFiles()
         {
             return Directory.GetFiles(GetDBDir(), "*.sqlite");
+        }
+
+        public static int FootpulseStart
+        {
+            get
+            {
+                SqliteConnection connection = new("Data Source=" + PtRenderingParams.Instance.PathToSqliteFile);
+                connection.Open();
+                // Create sqlite commands
+                SqliteCommand startfp = connection.CreateCommand();
+                startfp.CommandText = "SELECT footpulse_range_start FROM Metainformation";
+                SqliteDataReader startfp_reader = startfp.ExecuteReader();
+                startfp_reader.Read();
+                return startfp_reader.GetInt32(0);
+            }
+        }
+
+        public static int FootpulseEnd
+        {
+            get
+            {
+                SqliteConnection connection = new("Data Source=" + PtRenderingParams.Instance.PathToSqliteFile);
+                connection.Open();
+
+                // Create sqlite commands
+                SqliteCommand endfp = connection.CreateCommand();
+                endfp.CommandText = "SELECT footpulse_range_end FROM Metainformation";
+                SqliteDataReader endfp_reader = endfp.ExecuteReader();
+                endfp_reader.Read();
+
+                int result = endfp_reader.GetInt32(0);
+                endfp_reader.Close();
+                return result;
+
+            }
+        }
+
+        public static string NextFile
+        {
+            get
+            {
+                SqliteConnection connection = new("Data Source=" + PtRenderingParams.Instance.PathToSqliteFile);
+                connection.Open();
+
+                // Create sqlite commands
+                SqliteCommand next = connection.CreateCommand();
+                next.CommandText = "SELECT file_name_subsequent FROM Metainformation";
+                SqliteDataReader next_reader = next.ExecuteReader();
+                next_reader.Read();
+
+                string result = next_reader.GetString(0);
+                next_reader.Close();
+                return result;
+            }
         }
         #endregion Getters
 
