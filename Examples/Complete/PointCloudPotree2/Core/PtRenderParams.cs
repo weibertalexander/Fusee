@@ -16,8 +16,8 @@ namespace Fusee.Examples.PointCloudPotree2.Core
         public PointThresholdHandler PointThresholdHandler;
         public ProjectedSizeModifierHandler ProjectedSizeModifierHandler;
 
-        //public string PathToOocFile = @"C:\Uni\Fusee\Examples\Complete\PointCloudPotree2\Core\Assets\Cube1030301\Potree\";
-        public string PathToOocFile = @"C:\Praktikum\datenbanken\potree\220202002-0000_0";
+        public string PathToOocFile = Path.Combine("Assets", "Cube1030301", "Potree");
+
         public ShaderEffect DepthPassEf;
         public PointCloudSurfaceEffect ColorPassEf;
 
@@ -57,7 +57,7 @@ namespace Fusee.Examples.PointCloudPotree2.Core
             }
         }
 
-        private int _size = 4;
+        private int _size = 3;
         public int Size
         {
             get { return _size; }
@@ -80,7 +80,7 @@ namespace Fusee.Examples.PointCloudPotree2.Core
             }
         }
 
-        private float _edlStrength = 0.03f;
+        private float _edlStrength = 0;
         public float EdlStrength
         {
             get { return _edlStrength; }
