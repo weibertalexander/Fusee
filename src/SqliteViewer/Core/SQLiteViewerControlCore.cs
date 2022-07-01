@@ -99,6 +99,39 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         private readonly float _fovy = M.PiOver4;
 
+        private bool _channel1 = true;
+        private bool _channel2 = true;
+        private bool _channel3 = true;
+        private bool _channel4 = true;
+        private bool _channel8 = true;
+        private bool _channel9 = true;
+
+        public bool Channel1
+        {
+            get { return _channel1;}
+        }
+        public bool Channel2
+        {
+            get { return _channel2; }
+        }
+
+        public bool Channel3
+        {
+            get { return _channel3; }
+        }
+        public bool Channel4
+        {
+            get { return _channel4; }
+        }
+        public bool Channel8
+        {
+            get { return _channel8; }
+        }
+        public bool Channel9
+        {
+            get { return _channel9; }
+        }
+
         public bool ClosingRequested
         {
             get => _closingRequested;
@@ -459,9 +492,9 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 }
 
                 // Mouse is over 2D camera.
-                if (_lastClickedMousePos.y <= (_height / 100 * (100 - _mainCamViewportSize)))
+                if (_lastClickedMousePos.y <= ((_height / 100) * (100 - _mainCamViewportSize)))
                 {
-                    //Diagnostics.Debug(_lastClickedMousePos.y + "   " + Height / 100 * _mainCamViewportSize);
+                    Diagnostics.Debug(_lastClickedMousePos.y + "   " + _height / 100 * _mainCamViewportSize);
                     if (allowInput)
                     {
                         _camera2Transform.Translate(new float3(-Input.Mouse.Velocity.x * Time.DeltaTime * _camera2MouseSensitivity, Input.Mouse.Velocity.y * Time.DeltaTime * _camera2MouseSensitivity, 0));
@@ -548,41 +581,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
            _angleVelHorz *= curDamp;
            _angleVelVert *= curDamp;
             */
-
-            ToggleScannerChannel();
-        }
-
-        public void ToggleScannerChannel()
-        {
-            if (_scannerChannelCooldown <= 0)
-            {
-                _scannerChannelCooldown = 0.15f;
-                if (Input.Keyboard.GetKey(KeyCodes.D1))
-                {
-                    _pointCloudComponentList[0].Active = !_pointCloudComponentList[0].Active;
-                }
-                if (Input.Keyboard.GetKey(KeyCodes.D2))
-                {
-                    _pointCloudComponentList[1].Active = !_pointCloudComponentList[1].Active;
-                }
-                if (Input.Keyboard.GetKey(KeyCodes.D3))
-                {
-                    _pointCloudComponentList[2].Active = !_pointCloudComponentList[2].Active;
-                }
-                if (Input.Keyboard.GetKey(KeyCodes.D4))
-                {
-                    _pointCloudComponentList[3].Active = !_pointCloudComponentList[3].Active;
-                }
-                if (Input.Keyboard.GetKey(KeyCodes.D8))
-                {
-                    _pointCloudComponentList[4].Active = !_pointCloudComponentList[4].Active;
-                }
-                if (Input.Keyboard.GetKey(KeyCodes.D9))
-                {
-                    _pointCloudComponentList[5].Active = !_pointCloudComponentList[5].Active;
-                }
-            }
-            _scannerChannelCooldown -= Time.DeltaTime;
         }
 
         private void OnThresholdChanged(int newValue)
@@ -630,31 +628,37 @@ namespace Fusee.Examples.SQLiteViewer.Core
         public void ToggleScanner1()
         {
             _pointCloudComponentList[0].Active = !_pointCloudComponentList[0].Active;
+            _channel1 = !_channel1;
         }
 
         public void ToggleScanner2()
         {
             _pointCloudComponentList[1].Active = !_pointCloudComponentList[1].Active;
+            _channel2 = !_channel2;
         }
 
         public void ToggleScanner3()
         {
             _pointCloudComponentList[2].Active = !_pointCloudComponentList[2].Active;
+            _channel3 = !_channel3;
         }
 
         public void ToggleScanner4()
         {
             _pointCloudComponentList[3].Active = !_pointCloudComponentList[3].Active;
+            _channel4 = !_channel4;
         }
 
         public void ToggleScanner8()
         {
             _pointCloudComponentList[4].Active = !_pointCloudComponentList[4].Active;
+            _channel8 = !_channel8;
         }
 
         public void ToggleScanner9()
         {
             _pointCloudComponentList[5].Active = !_pointCloudComponentList[5].Active;
+            _channel9 = !_channel9;
         }
 
         public void OnForwardDown(int value)

@@ -1,6 +1,8 @@
 ﻿using Fusee.Engine.Common;
 using Fusee.Engine.Core;
+using Fusee.Base.Core;
 using Fusee.Engine.Core.ShaderShards;
+using Fusee.Engine.Imp.Graphics.Desktop;
 using Fusee.ImGuiDesktop;
 using Fusee.ImGuiDesktop.Templates;
 using Fusee.Math.Core;
@@ -41,6 +43,26 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         private static bool _isMouseInsideFuControl;
 
+        private ExposedTexture _beginningTexture;
+        private ExposedTexture _jumpBackTexture;
+        private ExposedTexture _playTexture;
+        private ExposedTexture _stopTexture;
+        private ExposedTexture _jumpForwardTexture;
+        private ExposedTexture _endingTexture;
+
+        private ExposedTexture _green1;
+        private ExposedTexture _red1;
+        private ExposedTexture _green2;
+        private ExposedTexture _red2;
+        private ExposedTexture _green3;
+        private ExposedTexture _red3;
+        private ExposedTexture _green4;
+        private ExposedTexture _red4;
+        private ExposedTexture _green8;
+        private ExposedTexture _red8;
+        private ExposedTexture _green9;
+        private ExposedTexture _red9;
+
 
         private SQLiteViewerControlCore _sqliteViewerControl;
 
@@ -53,6 +75,80 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
             _sqliteViewerControl = new SQLiteViewerControlCore(RC);
             _sqliteViewerControl.Init();
+
+            ImageData img = await AssetStorage.GetAsync<ImageData>("beginning1.png");
+            _beginningTexture = new ExposedTexture(img);
+            RC.RegisterTexture(_beginningTexture);
+
+            ImageData img2 = await AssetStorage.GetAsync<ImageData>("backward1.png");
+            _jumpBackTexture = new ExposedTexture(img2);
+            RC.RegisterTexture(_jumpBackTexture);
+
+            ImageData img3 = await AssetStorage.GetAsync<ImageData>("play1.png");
+            _playTexture = new ExposedTexture(img3);
+            RC.RegisterTexture(_playTexture);
+
+            ImageData img4 = await AssetStorage.GetAsync<ImageData>("stop1.png");
+            _stopTexture = new ExposedTexture(img4);
+            RC.RegisterTexture(_stopTexture);
+
+            ImageData img5 = await AssetStorage.GetAsync<ImageData>("forward1.png");
+            _jumpForwardTexture = new ExposedTexture(img5);
+            RC.RegisterTexture(_jumpForwardTexture);
+
+            ImageData img6 = await AssetStorage.GetAsync<ImageData>("end1.png");
+            _endingTexture = new ExposedTexture(img6);
+            RC.RegisterTexture(_endingTexture);
+
+
+
+            ImageData green1 = await AssetStorage.GetAsync<ImageData>("1_g.png");
+            _green1 = new ExposedTexture(green1);
+            RC.RegisterTexture(_green1);
+
+            ImageData red1 = await AssetStorage.GetAsync<ImageData>("1_r.png");
+            _red1 = new ExposedTexture(red1);
+            RC.RegisterTexture(_red1);
+
+            ImageData green2 = await AssetStorage.GetAsync<ImageData>("2_g.png");
+            _green2 = new ExposedTexture(green2);
+            RC.RegisterTexture(_green2);
+
+            ImageData red2 = await AssetStorage.GetAsync<ImageData>("2_r.png");
+            _red2 = new ExposedTexture(red2);
+            RC.RegisterTexture(_red2);
+
+            ImageData green3 = await AssetStorage.GetAsync<ImageData>("3_g.png");
+            _green3 = new ExposedTexture(green3);
+            RC.RegisterTexture(_green3);
+
+            ImageData red3 = await AssetStorage.GetAsync<ImageData>("3_r.png");
+            _red3 = new ExposedTexture(red3);
+            RC.RegisterTexture(_red3);
+
+            ImageData green4 = await AssetStorage.GetAsync<ImageData>("4_g.png");
+            _green4 = new ExposedTexture(green4);
+            RC.RegisterTexture(_green4);
+
+            ImageData red4 = await AssetStorage.GetAsync<ImageData>("4_r.png");
+            _red4 = new ExposedTexture(red4);
+            RC.RegisterTexture(_red4);
+
+            ImageData green8 = await AssetStorage.GetAsync<ImageData>("8_g.png");
+            _green8 = new ExposedTexture(green8);
+            RC.RegisterTexture(_green8);
+
+            ImageData red8 = await AssetStorage.GetAsync<ImageData>("8_r.png");
+            _red8 = new ExposedTexture(red8);
+            RC.RegisterTexture(_red8);
+
+            ImageData green9 = await AssetStorage.GetAsync<ImageData>("9_g.png");
+            _green9 = new ExposedTexture(green9);
+            RC.RegisterTexture(_green9);
+
+            ImageData red9 = await AssetStorage.GetAsync<ImageData>("9_r.png");
+            _red9 = new ExposedTexture(red9);
+            RC.RegisterTexture(_red9);
 
             await base.InitAsync();
 
@@ -163,17 +259,21 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         internal void DrawGUI()
         {
+            int s = 20;  // Image size for buttons.
+            int c = 32;
             ImGui.Begin("Controls");
 
             ImGui.NewLine();
 
-            if (ImGui.Button("Jump to start"))
+            int hndl1 = ((TextureHandle)_beginningTexture.TextureHandle).TexHandle;
+            if (ImGui.ImageButton(new IntPtr(hndl1), new Vector2(s, s)))
             {
                 _sqliteViewerControl.OnBeginningDown();
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("Back"))
+            int hndl2 = ((TextureHandle)_jumpBackTexture.TextureHandle).TexHandle;
+            if (ImGui.ImageButton(new IntPtr(hndl2), new Vector2(s, s)))
             {
                 _sqliteViewerControl.OnBackwardDown(_stepsize);
             }
@@ -181,31 +281,31 @@ namespace Fusee.Examples.SQLiteViewer.Core
             ImGui.SameLine();
             if (!_sqliteViewerControl.IsPlaying)
             {
-                //IntPtr img = IntPtr.Parse(Base.Core.AssetStorage.Get<Base.Core.ImageData>("play1.png").PixelData.ToString());
-                //IntPtr img = new IntPtr)
-                //if (ImGui.ImageButton(img, new Vector2(10, 10)))
-
-                if (ImGui.Button("Play"))
+                int hndl3 = ((TextureHandle)_playTexture.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndl3), new Vector2(s, s)))
                 {
                     _sqliteViewerControl.OnPlayDown();
                 }
             }
             else
             {
-                if (ImGui.Button("Stop"))
+                int hndl4 = ((TextureHandle)_stopTexture.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndl4), new Vector2(s, s)))
                 {
                     _sqliteViewerControl.OnPlayDown();
                 }
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("Forward"))
+            int hndl5 = ((TextureHandle)_jumpForwardTexture.TextureHandle).TexHandle;
+            if (ImGui.ImageButton(new IntPtr(hndl5), new Vector2(s, s)))
             {
                 _sqliteViewerControl.OnForwardDown(_stepsize);
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("Jump to end"))
+            int hndl6 = ((TextureHandle)_endingTexture.TextureHandle).TexHandle;
+            if (ImGui.ImageButton(new IntPtr(hndl6), new Vector2(s, s)))
             {
                 _sqliteViewerControl.OnEndDown();
             }
@@ -230,42 +330,114 @@ namespace Fusee.Examples.SQLiteViewer.Core
             ImGui.NewLine();
 
             ImGui.Text("Toggle scanner channel");
-            
-            ImGui.NewLine();
-            if (ImGui.Button("1")) {
-                _sqliteViewerControl.ToggleScanner1();
-            };
-
-            ImGui.SameLine();
-            if (ImGui.Button("2"))
-            {
-                _sqliteViewerControl.ToggleScanner2();
-            };
-
-            ImGui.SameLine();
-            if (ImGui.Button("3"))
-            {
-                _sqliteViewerControl.ToggleScanner3();
-            };
 
             ImGui.NewLine();
-
-            if (ImGui.Button("4"))
+            if (_sqliteViewerControl.Channel1)
             {
-                _sqliteViewerControl.ToggleScanner1();
-            };
+                int hndlc = ((TextureHandle)_green1.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner1();
+                }
+            }
+            else
+            {
+                int hndlc = ((TextureHandle)_red1.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner1();
+                }
+            }
 
             ImGui.SameLine();
-            if (ImGui.Button("8"))
+            if (_sqliteViewerControl.Channel2)
             {
-                _sqliteViewerControl.ToggleScanner8();
-            };
+                int hndlc = ((TextureHandle)_green2.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner2();
+                }
+            }
+            else
+            {
+                int hndlc = ((TextureHandle)_red2.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner2();
+                }
+            }
 
             ImGui.SameLine();
-            if (ImGui.Button("9"))
+            if (_sqliteViewerControl.Channel3)
             {
-                _sqliteViewerControl.ToggleScanner9();
-            };
+                int hndlc = ((TextureHandle)_green3.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner3();
+                }
+            }
+            else
+            {
+                int hndlc = ((TextureHandle)_red3.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner3();
+                }
+            }
+
+            ImGui.NewLine();
+            if (_sqliteViewerControl.Channel4)
+            {
+                int hndlc = ((TextureHandle)_green4.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner4();
+                }
+            }
+            else
+            {
+                int hndlc = ((TextureHandle)_red4.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner4();
+                }
+            }
+
+            ImGui.SameLine();
+            if (_sqliteViewerControl.Channel8)
+            {
+                int hndlc = ((TextureHandle)_green8.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner8();
+                }
+            }
+            else
+            {
+                int hndlc = ((TextureHandle)_red8.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner8();
+                }
+            }
+
+            ImGui.SameLine();
+            if (_sqliteViewerControl.Channel9)
+            {
+                int hndlc = ((TextureHandle)_green9.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner9();
+                }
+            }
+            else
+            {
+                int hndlc = ((TextureHandle)_red9.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                {
+                    _sqliteViewerControl.ToggleScanner9();
+                }
+            }
 
             ImGui.Begin("Settings");
             ImGui.Text("Fusee PointCloud Rendering");
