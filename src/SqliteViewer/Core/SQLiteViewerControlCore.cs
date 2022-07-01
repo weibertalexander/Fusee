@@ -271,14 +271,14 @@ namespace Fusee.Examples.SQLiteViewer.Core
             cam2.Children.Add(camera2Boundaries);
 
             // Set viewports: 2D camera is on top of 3D cameras viewport, axes camera is on the right side of 2D cameras viewport.
-            //_camera.Viewport = new float4(0, 0, 100, _mainCamViewportSize);
-            _camera.Viewport = new float4(0, 0, 100, 100);
-            //_camera2.Viewport = new float4(0, _mainCamViewportSize, 100, 100 - _mainCamViewportSize);
-            //_camera3.Viewport = new float4(_mainCamViewportSize + ((100 - _mainCamViewportSize) / 4), _mainCamViewportSize + ((100 - _mainCamViewportSize) / 4), 15, 15);
+            _camera.Viewport = new float4(0, 0, 100, _mainCamViewportSize);
+            //_camera.Viewport = new float4(0, 0, 100, 100);
+            _camera2.Viewport = new float4(0, _mainCamViewportSize, 100, 100 - _mainCamViewportSize);
+            _camera3.Viewport = new float4(_mainCamViewportSize + ((100 - _mainCamViewportSize) / 4), _mainCamViewportSize + ((100 - _mainCamViewportSize) / 4), 15, 15);
 
             _scene.Children.Add(cam);
-            //_scene.Children.Add(cam2);
-            //_scene.Children.Add(cam3);
+            _scene.Children.Add(cam2);
+            _scene.Children.Add(cam3);
         }
 
         // Initialize coordinate axes, which will rotate according to 2D cameras viewing direction.
@@ -412,13 +412,13 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 PtRenderingParams.Instance.DepthPassEf.Active = true;
                 PtRenderingParams.Instance.ColorPassEf.Active = false;
 
-                //_camera.Viewport = new float4(0, 0, 100, 100);  // If Viewport is not "reset", the DepthTex will be rendered to only half of the camera (?????).
+                _camera.Viewport = new float4(0, 0, 100, 100);  // If Viewport is not "reset", the DepthTex will be rendered to only half of the camera (?????).
                 _camera.RenderTexture = PtRenderingParams.Instance.ColorPassEf.DepthTex;
 
                 _sceneRenderer.Render(_rc);
 
                 //_camera.Viewport = new float4(0, 0, 100, _mainCamViewportSize);
-                //_camera2.Viewport = new float4(0, _mainCamViewportSize, 100, 100 - _mainCamViewportSize);
+                _camera2.Viewport = new float4(0, _mainCamViewportSize, 100, 100 - _mainCamViewportSize);
 
                 _camera.RenderTexture = null;
                 //_camera2.RenderTexture = null;
@@ -428,6 +428,8 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
 
             _camera.RenderTexture = RenderTexture;
+            _camera2.RenderTexture = RenderTexture;
+            _camera3.RenderTexture = RenderTexture;
 
             _sceneRenderer.Render(_rc);
 
@@ -623,6 +625,36 @@ namespace Fusee.Examples.SQLiteViewer.Core
         public void OnPlayDown()
         {
             _isPlaying = !_isPlaying;
+        }
+
+        public void ToggleScanner1()
+        {
+            _pointCloudComponentList[0].Active = !_pointCloudComponentList[0].Active;
+        }
+
+        public void ToggleScanner2()
+        {
+            _pointCloudComponentList[1].Active = !_pointCloudComponentList[1].Active;
+        }
+
+        public void ToggleScanner3()
+        {
+            _pointCloudComponentList[2].Active = !_pointCloudComponentList[2].Active;
+        }
+
+        public void ToggleScanner4()
+        {
+            _pointCloudComponentList[3].Active = !_pointCloudComponentList[3].Active;
+        }
+
+        public void ToggleScanner8()
+        {
+            _pointCloudComponentList[4].Active = !_pointCloudComponentList[4].Active;
+        }
+
+        public void ToggleScanner9()
+        {
+            _pointCloudComponentList[5].Active = !_pointCloudComponentList[5].Active;
         }
 
         public void OnForwardDown(int value)

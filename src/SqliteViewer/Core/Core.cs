@@ -227,6 +227,46 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 spwanOpenFilePopup = true;
             }
 
+            ImGui.NewLine();
+
+            ImGui.Text("Toggle scanner channel");
+            
+            ImGui.NewLine();
+            if (ImGui.Button("1")) {
+                _sqliteViewerControl.ToggleScanner1();
+            };
+
+            ImGui.SameLine();
+            if (ImGui.Button("2"))
+            {
+                _sqliteViewerControl.ToggleScanner2();
+            };
+
+            ImGui.SameLine();
+            if (ImGui.Button("3"))
+            {
+                _sqliteViewerControl.ToggleScanner3();
+            };
+
+            ImGui.NewLine();
+
+            if (ImGui.Button("4"))
+            {
+                _sqliteViewerControl.ToggleScanner1();
+            };
+
+            ImGui.SameLine();
+            if (ImGui.Button("8"))
+            {
+                _sqliteViewerControl.ToggleScanner8();
+            };
+
+            ImGui.SameLine();
+            if (ImGui.Button("9"))
+            {
+                _sqliteViewerControl.ToggleScanner9();
+            };
+
             ImGui.Begin("Settings");
             ImGui.Text("Fusee PointCloud Rendering");
             ImGui.Text($"Application average {1000.0f / ImGui.GetIO().Framerate:0.00} ms/frame ({ImGui.GetIO().Framerate:0} FPS)");
