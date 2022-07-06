@@ -8,10 +8,7 @@ using Fusee.ImGuiDesktop.Templates;
 using Fusee.Math.Core;
 using Fusee.PointCloud.Common;
 using ImGuiNET;
-using System;
-using System.IO;
 using System.Numerics;
-using System.Threading.Tasks;
 
 namespace Fusee.Examples.SQLiteViewer.Core
 {
@@ -19,7 +16,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
         Description = "Converts SQLite into a viewable pointcloud.")]
     public class Core : RenderCanvas
     {
-
         #region StaticBindingVars
 
         private static bool _dockspaceOpen = true;
@@ -39,10 +35,13 @@ namespace Fusee.Examples.SQLiteViewer.Core
         private static Vector4 _ptColor = new(0, 0, 0, 1);
         private static bool _colorPickerOpen;
 
+        private static float _currentFootpulse;
         private static int _stepsize = 10;
+        private static float _playerspeed = 5f;
 
         private static bool _isMouseInsideFuControl;
 
+        // "Video player" textures.
         private ExposedTexture _beginningTexture;
         private ExposedTexture _jumpBackTexture;
         private ExposedTexture _playTexture;
@@ -50,6 +49,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
         private ExposedTexture _jumpForwardTexture;
         private ExposedTexture _endingTexture;
 
+        // Scanner channel button textures.
         private ExposedTexture _green1;
         private ExposedTexture _red1;
         private ExposedTexture _green2;
@@ -64,18 +64,22 @@ namespace Fusee.Examples.SQLiteViewer.Core
         private ExposedTexture _red9;
 
 
-        private SQLiteViewerControlCore _sqliteViewerControl;
+        private SQLiteViewerControlCore _sqliteViewerControl = null;
+        private bool _warned = false;
 
         #endregion
-
 
         public override async Task InitAsync()
         {
             SetImGuiDesign();
 
-            _sqliteViewerControl = new SQLiteViewerControlCore(RC);
-            _sqliteViewerControl.Init();
+            if (!String.IsNullOrEmpty(PtRenderingParams.Instance.PathToSqliteFile))
+            {
+                Diagnostics.Warn("true");
+                _sqliteViewerControl = new SQLiteViewerControlCore(RC);
+            }
 
+            // "Video player" textures.
             ImageData img = await AssetStorage.GetAsync<ImageData>("beginning1.png");
             _beginningTexture = new ExposedTexture(img);
             RC.RegisterTexture(_beginningTexture);
@@ -100,8 +104,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             _endingTexture = new ExposedTexture(img6);
             RC.RegisterTexture(_endingTexture);
 
-
-
+            // Scanner button textures.
             ImageData green1 = await AssetStorage.GetAsync<ImageData>("1_g.png");
             _green1 = new ExposedTexture(green1);
             RC.RegisterTexture(_green1);
@@ -154,33 +157,43 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         }
 
+
         public override void Update()
         {
-            _sqliteViewerControl.Update(_isMouseInsideFuControl);
-
-            if (Int32.Parse(_sqliteViewerControl.CurrentFootpulse) >= _sqliteViewerControl.EndFootpulse)
+            if (_sqliteViewerControl != null)
             {
-                if (File.Exists(FileManager.GetDBDir() + "/" + FileManager.NextFile))
+                _sqliteViewerControl.Update(_isMouseInsideFuControl);
+                if (_sqliteViewerControl.CurrentFootpulse >= _sqliteViewerControl.EndFootpulse)
                 {
-                    PtRenderingParams.Instance.PathToOocFile = FileManager.ConvertedDirectory + "/" + Path.GetFileNameWithoutExtension(FileManager.NextFile);
-                    PtRenderingParams.Instance.PathToSqliteFile = FileManager.GetDBDir() + FileManager.NextFile;
+                    if (File.Exists(FileManager.GetDBDir() + FileManager.NextFile))
+                    {
+                        Diagnostics.Warn(FileManager.GetDBDir() + FileManager.NextFile + " exists");
+                        PtRenderingParams.Instance.PathToOocFile = FileManager.ConvertedDirectory + "/" + Path.GetFileNameWithoutExtension(FileManager.NextFile);
+                        PtRenderingParams.Instance.PathToSqliteFile = FileManager.GetDBDir() + FileManager.NextFile;
 
-                    _sqliteViewerControl.Dispose();
-                    _sqliteViewerControl = new SQLiteViewerControlCore(RC);
-                    _sqliteViewerControl.Init();
-                    _sqliteViewerControl.UpdateOriginalGameWindowDimensions(Width, Height);
+                        _sqliteViewerControl.Dispose();
+                        _sqliteViewerControl = new SQLiteViewerControlCore(RC);
+                        _sqliteViewerControl.UpdateOriginalGameWindowDimensions(Width, Height);
 
-                }
-                else
-                {
-                    Fusee.Base.Core.Diagnostics.Warn("Next sqlite file not found.");
+                    }
+                    else
+                    {
+                        if (!_warned)
+                        {
+                            _warned = true;
+                            Diagnostics.Warn("Next sqlite file not found.");
+                        }
+                    }
                 }
             }
         }
 
         public override void Resize(ResizeEventArgs e)
         {
-            _sqliteViewerControl.UpdateOriginalGameWindowDimensions(e.Width, e.Height);
+            if (_sqliteViewerControl != null)
+            {
+                _sqliteViewerControl.UpdateOriginalGameWindowDimensions(e.Width, e.Height);
+            }
 
         }
 
@@ -239,12 +252,15 @@ namespace Fusee.Examples.SQLiteViewer.Core
             var fuseeViewportSize = fuseeViewportMax - fuseeViewportMin;
             var fuseeViewportPos = ImGui.GetWindowPos();
 
-            var hndl = _sqliteViewerControl.RenderToTexture((int)fuseeViewportSize.X, (int)fuseeViewportSize.Y);
+            if (_sqliteViewerControl != null)
+            {
+                var hndl = _sqliteViewerControl.RenderToTexture((int)fuseeViewportSize.X, (int)fuseeViewportSize.Y);
 
 
-            ImGui.Image(hndl, fuseeViewportSize,
-                new Vector2(0, 1),
-                new Vector2(1, 0));
+                ImGui.Image(hndl, fuseeViewportSize,
+                    new Vector2(0, 1),
+                    new Vector2(1, 0));
+            }
 
             // check if mouse is inside window, if true, accept update() inputs
             _isMouseInsideFuControl = ImGui.IsItemHovered();
@@ -264,291 +280,301 @@ namespace Fusee.Examples.SQLiteViewer.Core
             ImGui.Begin("Controls");
 
             ImGui.NewLine();
-
-            int hndl1 = ((TextureHandle)_beginningTexture.TextureHandle).TexHandle;
-            if (ImGui.ImageButton(new IntPtr(hndl1), new Vector2(s, s)))
+            if (_sqliteViewerControl != null)
             {
-                _sqliteViewerControl.OnBeginningDown();
-            }
 
-            ImGui.SameLine();
-            int hndl2 = ((TextureHandle)_jumpBackTexture.TextureHandle).TexHandle;
-            if (ImGui.ImageButton(new IntPtr(hndl2), new Vector2(s, s)))
-            {
-                _sqliteViewerControl.OnBackwardDown(_stepsize);
-            }
-
-            ImGui.SameLine();
-            if (!_sqliteViewerControl.IsPlaying)
-            {
-                int hndl3 = ((TextureHandle)_playTexture.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndl3), new Vector2(s, s)))
+                int hndl1 = ((TextureHandle)_beginningTexture.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndl1), new Vector2(s, s)))
                 {
-                    _sqliteViewerControl.OnPlayDown();
+                    _sqliteViewerControl.OnBeginningDown();
                 }
-            }
-            else
-            {
-                int hndl4 = ((TextureHandle)_stopTexture.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndl4), new Vector2(s, s)))
+
+                ImGui.SameLine();
+                int hndl2 = ((TextureHandle)_jumpBackTexture.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndl2), new Vector2(s, s)))
                 {
-                    _sqliteViewerControl.OnPlayDown();
+                    _sqliteViewerControl.OnBackwardDown(_stepsize);
                 }
-            }
 
-            ImGui.SameLine();
-            int hndl5 = ((TextureHandle)_jumpForwardTexture.TextureHandle).TexHandle;
-            if (ImGui.ImageButton(new IntPtr(hndl5), new Vector2(s, s)))
-            {
-                _sqliteViewerControl.OnForwardDown(_stepsize);
-            }
+                ImGui.SameLine();
 
-            ImGui.SameLine();
-            int hndl6 = ((TextureHandle)_endingTexture.TextureHandle).TexHandle;
-            if (ImGui.ImageButton(new IntPtr(hndl6), new Vector2(s, s)))
-            {
-                _sqliteViewerControl.OnEndDown();
-            }
-
-            ImGui.NewLine();
-            ImGui.InputInt("Step size", ref _stepsize, 1, 10);
-            if (_stepsize < 0) _stepsize = 0;
-
-
-            ImGui.NewLine();
-            ImGui.Text($"Footpulse: {_sqliteViewerControl.CurrentFootpulse}");
-
-            ImGui.NewLine();
-            ImGui.Text($"Current DB: {Path.GetFileName(PtRenderingParams.Instance.PathToSqliteFile)}");
-
-            ImGui.NewLine();
-            if (ImGui.Button("Open File"))
-            {
-                spwanOpenFilePopup = true;
-            }
-
-            ImGui.NewLine();
-
-            ImGui.Text("Toggle scanner channel");
-
-            ImGui.NewLine();
-            if (_sqliteViewerControl.Channel1)
-            {
-                int hndlc = ((TextureHandle)_green1.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                if (!_sqliteViewerControl.IsPlaying)
                 {
-                    _sqliteViewerControl.ToggleScanner1();
+                    int hndl3 = ((TextureHandle)_playTexture.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndl3), new Vector2(s, s)))
+                    {
+                        _sqliteViewerControl.OnPlayDown();
+                    }
                 }
-            }
-            else
-            {
-                int hndlc = ((TextureHandle)_red1.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                else
                 {
-                    _sqliteViewerControl.ToggleScanner1();
+                    int hndl4 = ((TextureHandle)_stopTexture.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndl4), new Vector2(s, s)))
+                    {
+                        _sqliteViewerControl.OnPlayDown();
+                    }
                 }
-            }
 
-            ImGui.SameLine();
-            if (_sqliteViewerControl.Channel2)
-            {
-                int hndlc = ((TextureHandle)_green2.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                ImGui.SameLine();
+                int hndl5 = ((TextureHandle)_jumpForwardTexture.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndl5), new Vector2(s, s)))
                 {
-                    _sqliteViewerControl.ToggleScanner2();
+                    _sqliteViewerControl.OnForwardDown(_stepsize);
                 }
-            }
-            else
-            {
-                int hndlc = ((TextureHandle)_red2.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+
+                ImGui.SameLine();
+                int hndl6 = ((TextureHandle)_endingTexture.TextureHandle).TexHandle;
+                if (ImGui.ImageButton(new IntPtr(hndl6), new Vector2(s, s)))
                 {
-                    _sqliteViewerControl.ToggleScanner2();
+                    _sqliteViewerControl.OnEndDown();
                 }
-            }
 
-            ImGui.SameLine();
-            if (_sqliteViewerControl.Channel3)
-            {
-                int hndlc = ((TextureHandle)_green3.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                ImGui.NewLine();
+                ImGui.InputInt("Step size", ref _stepsize, 1, 10);
+                if (_stepsize < 0) _stepsize = 0;
+
+                ImGui.NewLine();
+                ImGui.InputFloat("Player speed", ref _playerspeed, 5, 10);
+                if (_playerspeed < 1) _playerspeed = 1;
+                _sqliteViewerControl.Playerspeed = _playerspeed;
+
+                ImGui.NewLine();
+                _currentFootpulse = _sqliteViewerControl.CurrentFootpulse;
+                ImGui.InputFloat("Footpulse", ref _currentFootpulse, 1, 10, String.Format("{0:0.#}", _currentFootpulse));
+                _sqliteViewerControl.CurrentFootpulse = _currentFootpulse;
+
+                ImGui.NewLine();
+                ImGui.Text($"Current DB: {Path.GetFileName(PtRenderingParams.Instance.PathToSqliteFile)}");
+
+                ImGui.NewLine();
+                if (ImGui.Button("Open File"))
                 {
-                    _sqliteViewerControl.ToggleScanner3();
+                    spwanOpenFilePopup = true;
                 }
-            }
-            else
-            {
-                int hndlc = ((TextureHandle)_red3.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+
+                ImGui.NewLine();
+
+                ImGui.Text("Toggle scanner channel");
+
+                ImGui.NewLine();
+                if (_sqliteViewerControl.Channel1)
                 {
-                    _sqliteViewerControl.ToggleScanner3();
+                    int hndlc = ((TextureHandle)_green1.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner1();
+                    }
                 }
-            }
-
-            ImGui.NewLine();
-            if (_sqliteViewerControl.Channel4)
-            {
-                int hndlc = ((TextureHandle)_green4.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                else
                 {
-                    _sqliteViewerControl.ToggleScanner4();
+                    int hndlc = ((TextureHandle)_red1.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner1();
+                    }
                 }
-            }
-            else
-            {
-                int hndlc = ((TextureHandle)_red4.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+
+                ImGui.SameLine();
+                if (_sqliteViewerControl.Channel2)
                 {
-                    _sqliteViewerControl.ToggleScanner4();
+                    int hndlc = ((TextureHandle)_green2.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner2();
+                    }
                 }
-            }
-
-            ImGui.SameLine();
-            if (_sqliteViewerControl.Channel8)
-            {
-                int hndlc = ((TextureHandle)_green8.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                else
                 {
-                    _sqliteViewerControl.ToggleScanner8();
+                    int hndlc = ((TextureHandle)_red2.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner2();
+                    }
                 }
-            }
-            else
-            {
-                int hndlc = ((TextureHandle)_red8.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+
+                ImGui.SameLine();
+                if (_sqliteViewerControl.Channel3)
                 {
-                    _sqliteViewerControl.ToggleScanner8();
+                    int hndlc = ((TextureHandle)_green3.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner3();
+                    }
                 }
-            }
-
-            ImGui.SameLine();
-            if (_sqliteViewerControl.Channel9)
-            {
-                int hndlc = ((TextureHandle)_green9.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                else
                 {
-                    _sqliteViewerControl.ToggleScanner9();
+                    int hndlc = ((TextureHandle)_red3.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner3();
+                    }
                 }
-            }
-            else
-            {
-                int hndlc = ((TextureHandle)_red9.TextureHandle).TexHandle;
-                if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+
+                ImGui.NewLine();
+                if (_sqliteViewerControl.Channel4)
                 {
-                    _sqliteViewerControl.ToggleScanner9();
+                    int hndlc = ((TextureHandle)_green4.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner4();
+                    }
                 }
-            }
+                else
+                {
+                    int hndlc = ((TextureHandle)_red4.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner4();
+                    }
+                }
 
-            ImGui.Begin("Settings");
-            ImGui.Text("Fusee PointCloud Rendering");
-            ImGui.Text($"Application average {1000.0f / ImGui.GetIO().Framerate:0.00} ms/frame ({ImGui.GetIO().Framerate:0} FPS)");
+                ImGui.SameLine();
+                if (_sqliteViewerControl.Channel8)
+                {
+                    int hndlc = ((TextureHandle)_green8.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner8();
+                    }
+                }
+                else
+                {
+                    int hndlc = ((TextureHandle)_red8.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner8();
+                    }
+                }
 
-            ImGui.NewLine();
+                ImGui.SameLine();
+                if (_sqliteViewerControl.Channel9)
+                {
+                    int hndlc = ((TextureHandle)_green9.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner9();
+                    }
+                }
+                else
+                {
+                    int hndlc = ((TextureHandle)_red9.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner9();
+                    }
+                }
 
-            if (ImGui.Button("Show Octree"))
-            {
-                // not implemented
-            }
+                ImGui.Begin("Settings");
+                ImGui.Text("Fusee PointCloud Rendering");
+                ImGui.Text($"Application average {1000.0f / ImGui.GetIO().Framerate:0.00} ms/frame ({ImGui.GetIO().Framerate:0} FPS)");
 
-            ImGui.NewLine();
-            ImGui.Spacing();
+                ImGui.NewLine();
 
-            ImGui.BeginGroup();
-            ImGui.Text("Visibility");
-            ImGui.InputInt("Point threshold", ref _threshold, 1000, 10000);
-            ImGui.SliderFloat("Min. Projection Size Modifier", ref _fuseeViewportMinProj, 0f, 1f);
+                if (ImGui.Button("Show Octree"))
+                {
+                    // not implemented
+                }
 
+                ImGui.NewLine();
+                ImGui.Spacing();
 
-            PtRenderingParams.Instance.PointThreshold = _threshold;
-            PtRenderingParams.Instance.ProjectedSizeModifier = _fuseeViewportMinProj;
+                ImGui.BeginGroup();
+                ImGui.Text("Visibility");
+                ImGui.InputInt("Point threshold", ref _threshold, 1000, 10000);
+                ImGui.SliderFloat("Min. Projection Size Modifier", ref _fuseeViewportMinProj, 0f, 1f);
 
-            ImGui.EndGroup();
+                PtRenderingParams.Instance.PointThreshold = _threshold;
+                PtRenderingParams.Instance.ProjectedSizeModifier = _fuseeViewportMinProj;
 
+                ImGui.EndGroup();
 
-            ImGui.NewLine();
-            ImGui.Spacing();
-            ImGui.BeginGroup();
-            ImGui.Text("Lighting");
-            ImGui.SliderInt("EDL Neighbor Px", ref _edlNeighbour, 0, 5);
-            ImGui.SliderFloat("EDL Strength", ref _edlStrength, 0f, 5f);
+                ImGui.NewLine();
+                ImGui.Spacing();
+                ImGui.BeginGroup();
+                ImGui.Text("Lighting");
+                ImGui.SliderInt("EDL Neighbor Px", ref _edlNeighbour, 0, 5);
+                ImGui.SliderFloat("EDL Strength", ref _edlStrength, 0f, 5f);
 
-            PtRenderingParams.Instance.EdlStrength = _edlStrength;
-            PtRenderingParams.Instance.EdlNoOfNeighbourPx = _edlNeighbour;
+                PtRenderingParams.Instance.EdlStrength = _edlStrength;
+                PtRenderingParams.Instance.EdlNoOfNeighbourPx = _edlNeighbour;
 
-            ImGui.EndGroup();
+                ImGui.EndGroup();
 
-            ImGui.NewLine();
-            ImGui.Spacing();
-            ImGui.BeginGroup();
-            ImGui.Text("Point Shape");
-            ImGui.Combo("PointShape", ref _currentPtShape, new string[] { "Paraboloid", "Rect", "Circle" }, 3);
+                ImGui.NewLine();
+                ImGui.Spacing();
+                ImGui.BeginGroup();
+                ImGui.Text("Point Shape");
+                ImGui.Combo("PointShape", ref _currentPtShape, new string[] { "Paraboloid", "Rect", "Circle" }, 3);
 
-            PtRenderingParams.Instance.Shape = _currentPtShape switch
-            {
-                0 => PointShape.Paraboloid,
-                1 => PointShape.Rect,
-                2 => PointShape.Circle,
-                _ => PointShape.Paraboloid
-            };
+                PtRenderingParams.Instance.Shape = _currentPtShape switch
+                {
+                    0 => PointShape.Paraboloid,
+                    1 => PointShape.Rect,
+                    2 => PointShape.Circle,
+                    _ => PointShape.Paraboloid
+                };
 
-            ImGui.EndGroup();
+                ImGui.EndGroup();
 
-            ImGui.NewLine();
-            ImGui.Spacing();
-            ImGui.BeginGroup();
-            ImGui.Text("Point Size Method");
-            ImGui.Combo("Point Size Method", ref _currentPtSizeMethod, new string[] { "FixedPixelSize", "FixedWorldSize" }, 2);
-            ImGui.SliderInt("Point Size", ref _ptSize, 1, 20);
+                ImGui.NewLine();
+                ImGui.Spacing();
+                ImGui.BeginGroup();
+                ImGui.Text("Point Size Method");
+                ImGui.Combo("Point Size Method", ref _currentPtSizeMethod, new string[] { "FixedPixelSize", "FixedWorldSize" }, 2);
+                ImGui.SliderInt("Point Size", ref _ptSize, 1, 20);
 
-            PtRenderingParams.Instance.Size = _ptSize;
-            PtRenderingParams.Instance.PtMode = _currentPtSizeMethod switch
-            {
-                0 => PointCloud.Common.PointSizeMode.FixedPixelSize,
-                1 => PointCloud.Common.PointSizeMode.FixedWorldSize,
-                _ => PointCloud.Common.PointSizeMode.FixedPixelSize
-            };
+                PtRenderingParams.Instance.Size = _ptSize;
+                PtRenderingParams.Instance.PtMode = _currentPtSizeMethod switch
+                {
+                    0 => PointCloud.Common.PointSizeMode.FixedPixelSize,
+                    1 => PointCloud.Common.PointSizeMode.FixedWorldSize,
+                    _ => PointCloud.Common.PointSizeMode.FixedPixelSize
+                };
 
-            ImGui.EndGroup();
+                ImGui.EndGroup();
 
-            ImGui.NewLine();
-            ImGui.Spacing();
-            ImGui.BeginGroup();
-            ImGui.Text("Color Mode");
+                ImGui.NewLine();
+                ImGui.Spacing();
+                ImGui.BeginGroup();
+                ImGui.Text("Color Mode");
 
-            ImGui.Combo("Color mode", ref _currentColorMode, new string[] { "BaseColor", "VertexColor0", "VertexColor1", "VertexColor2" }, 4);
+                ImGui.Combo("Color mode", ref _currentColorMode, new string[] { "BaseColor", "VertexColor0", "VertexColor1", "VertexColor2" }, 4);
 
-            PtRenderingParams.Instance.ColorMode = _currentColorMode switch
-            {
-                0 => ColorMode.BaseColor,
-                1 => ColorMode.VertexColor0,
-                2 => ColorMode.VertexColor1,
-                3 => ColorMode.VertexColor2,
-                _ => ColorMode.VertexColor0
-            };
+                PtRenderingParams.Instance.ColorMode = _currentColorMode switch
+                {
+                    0 => ColorMode.BaseColor,
+                    1 => ColorMode.VertexColor0,
+                    2 => ColorMode.VertexColor1,
+                    3 => ColorMode.VertexColor2,
+                    _ => ColorMode.VertexColor0
+                };
 
-            ImGui.Spacing();
-            ImGui.BeginGroup();
-            ImGui.Text("Color picker");
+                ImGui.Spacing();
+                ImGui.BeginGroup();
+                ImGui.Text("Background Color");
 
-            if (ImGui.ColorButton("Toggle Color Picker", _ptColor, ImGuiColorEditFlags.DefaultOptions, Vector2.One * 50))
-            {
-                _colorPickerOpen = !_colorPickerOpen;
-            }
-            if (_colorPickerOpen)
-            {
-                ImGui.Begin("Color Picker", ref _colorPickerOpen, ImGuiWindowFlags.AlwaysAutoResize);
-                ImGui.ColorPicker4("Color", ref _ptColor);
+                if (ImGui.ColorButton("Toggle Color Picker", _ptColor, ImGuiColorEditFlags.DefaultOptions, Vector2.One * 50))
+                {
+                    _colorPickerOpen = !_colorPickerOpen;
+                }
+                if (_colorPickerOpen)
+                {
+                    ImGui.Begin("Color Picker", ref _colorPickerOpen, ImGuiWindowFlags.AlwaysAutoResize);
+                    ImGui.ColorPicker4("Color", ref _ptColor);
+                    ImGui.End();
+                    ImGui.GetStyle().Colors[(int)ImGuiCol.ChildBg] = _ptColor;
+                    if (_sqliteViewerControl != null)
+                    {
+                        _sqliteViewerControl.CameraBackgroundColor = _ptColor.ToFuseeVector();
+                    }
+                    //PtRenderingParams.Instance.ColorPassEf.SurfaceInput.Albedo = _ptColor.ToFuseeVector();
+                }
+                ImGui.EndGroup();
+
+                ImGui.EndGroup();
                 ImGui.End();
-
-                _sqliteViewerControl.CameraBackgroundColor = _ptColor.ToFuseeVector();
-                //PtRenderingParams.Instance.ColorPassEf.SurfaceInput.Albedo = _ptColor.ToFuseeVector();
             }
-            ImGui.EndGroup();
-
-            ImGui.EndGroup();
-            ImGui.End();
         }
-
 
         internal void DrawMainMenuBar()
         {
@@ -600,20 +626,16 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     {
                         _sqliteViewerControl.Dispose();
 
-                        _sqliteViewerControl = new SQLiteViewerControlCore(RC);
-                        _sqliteViewerControl.Init();
-                        _sqliteViewerControl.UpdateOriginalGameWindowDimensions(Width, Height);
-                        //_sqliteViewerControl.ResetCamera();
-                        // reset color picker
-                        _currentColorMode = 1;
                     }
+                    _sqliteViewerControl = new SQLiteViewerControlCore(RC);
+                    _sqliteViewerControl.UpdateOriginalGameWindowDimensions(Width, Height);
+
+                    // reset color picker
+                    _currentColorMode = 1;
                     ImGuiFileDialog.RemoveFilePicker(this);
                 }
-
                 ImGui.EndPopup();
             }
-
-
         }
 
         /// <summary>
@@ -642,12 +664,11 @@ namespace Fusee.Examples.SQLiteViewer.Core
             style.Alpha = 1.0f;
             style.FrameRounding = 3.0f;
 
-
             colors[(int)ImGuiCol.Text] = new Vector4(0.00f, 0.00f, 0.00f, 1.00f);
             colors[(int)ImGuiCol.TextDisabled] = new Vector4(0.60f, 0.60f, 0.60f, 1.00f);
             colors[(int)ImGuiCol.WindowBg] = new Vector4(0.86f, 0.86f, 0.86f, 1.00f);
             //color(int)s[ImGuiCol_ChildWindowBg]         = new Vector4(0.00f, 0.00f, 0.00f, 0.00f);
-            colors[(int)ImGuiCol.ChildBg] = new Vector4(0.00f, 0.00f, 0.00f, 0.00f);
+            colors[(int)ImGuiCol.ChildBg] = new Vector4(0.00f, 0.00f, 0.00f, 0.95f);
             colors[(int)ImGuiCol.PopupBg] = new Vector4(0.93f, 0.93f, 0.93f, 0.98f);
             colors[(int)ImGuiCol.Border] = new Vector4(0.71f, 0.71f, 0.71f, 0.08f);
             colors[(int)ImGuiCol.BorderShadow] = new Vector4(0.00f, 0.00f, 0.00f, 0.04f);

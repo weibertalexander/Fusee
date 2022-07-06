@@ -33,7 +33,27 @@ namespace Fusee.Examples.SQLiteViewer.Core
             get { return _convertedDirectory; }
         }
 
-        public static int _footpulseSize = Constants.FootpulseAmount;
+        private static int _footpulseSize = 10;
+        
+        public static int FootpulseSize
+        {
+            get { return _footpulseSize; }
+        }
+
+        public static int FootpulseAmount
+        {
+            get
+            {
+                SqliteConnection connection = new("Data Source=" + PtRenderingParams.Instance.PathToSqliteFile);
+                connection.Open();
+                // Create sqlite commands
+                SqliteCommand noe = connection.CreateCommand();
+                noe.CommandText = "SELECT number_of_entries FROM Metainformation";
+                SqliteDataReader noe_reader = noe.ExecuteReader();
+                noe_reader.Read();
+                return noe_reader.GetInt32(0) * _footpulseSize;
+            }
+        }
 
         #region Getters
         public static string GetDBDir()
@@ -55,11 +75,13 @@ namespace Fusee.Examples.SQLiteViewer.Core
         {
             return _convertedDirectory;
         }
+
         public static string[] GetSqliteFiles()
         {
             return Directory.GetFiles(GetDBDir(), "*.sqlite");
         }
 
+        // Return first footpulse of current database.
         public static int FootpulseStart
         {
             get
@@ -75,6 +97,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
         }
 
+        // Return the last footpulse of current database.
         public static int FootpulseEnd
         {
             get
@@ -95,6 +118,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
         }
 
+        // Returns the next sqlite file, specified in current database.
         public static string NextFile
         {
             get

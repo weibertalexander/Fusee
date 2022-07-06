@@ -466,7 +466,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
         // Add a pointcloud to the scene based on current z / footpulse position.
         public void SetPointcloud()
         {
-            int index = (int)_camZ / (Constants.FootpulseAmount * 10);
+            int index = (int)_camZ / (FileManager.FootpulseSize * 10);
 
             if (index != _currentIndex)
             {
@@ -484,7 +484,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _pointCloudComponent = (PointCloudComponent)_reader.GetPointCloudComponent(pathToFile);
 
                 _cloud.Components.Add(_pointCloudComponent);
-                _cloudTransform.Translation = new float3(0, 0, 10 * index * Constants.FootpulseAmount);
+                _cloudTransform.Translation = new float3(0, 0, 10 * index * FileManager.FootpulseSize);
                 /*
                 _cloud = new SceneNode()
                 {
