@@ -41,6 +41,10 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         private static bool _isMouseInsideFuControl;
 
+        // 2D-Camera guiding lines textures.
+        private ExposedTexture _on;
+        private ExposedTexture _off;
+
         // "Video player" textures.
         private ExposedTexture _beginningTexture;
         private ExposedTexture _jumpBackTexture;
@@ -78,6 +82,14 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 Diagnostics.Warn("true");
                 _sqliteViewerControl = new SQLiteViewerControlCore(RC);
             }
+
+            ImageData on = await AssetStorage.GetAsync<ImageData>("on.png");
+            _on = new ExposedTexture(on);
+            RC.RegisterTexture(_on);
+
+            ImageData off = await AssetStorage.GetAsync<ImageData>("off.png");
+            _off = new ExposedTexture(off);
+            RC.RegisterTexture(_off);
 
             // "Video player" textures.
             ImageData img = await AssetStorage.GetAsync<ImageData>("beginning1.png");
@@ -275,8 +287,8 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         internal void DrawGUI()
         {
-            int s = 20;  // Image size for buttons.
-            int c = 32;
+            int s = 30;  // Image size for buttons.
+            int c = 64;
             ImGui.Begin("Controls");
 
             ImGui.NewLine();
@@ -345,7 +357,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
                 ImGui.NewLine();
                 ImGui.Text($"Current DB: {Path.GetFileName(PtRenderingParams.Instance.PathToSqliteFile)}");
-
+                
                 ImGui.NewLine();
                 if (ImGui.Button("Open File"))
                 {
@@ -469,13 +481,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 ImGui.Text($"Application average {1000.0f / ImGui.GetIO().Framerate:0.00} ms/frame ({ImGui.GetIO().Framerate:0} FPS)");
 
                 ImGui.NewLine();
-
-                if (ImGui.Button("Show Octree"))
-                {
-                    // not implemented
-                }
-
-                ImGui.NewLine();
                 ImGui.Spacing();
 
                 ImGui.BeginGroup();
@@ -572,6 +577,25 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 ImGui.EndGroup();
 
                 ImGui.EndGroup();
+                ImGui.NewLine();
+
+                ImGui.Text("Toggle 2D Camera guides");
+                if (_sqliteViewerControl.GuideLinesOn)
+                {
+                    int onhndl = ((TextureHandle)_on.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(onhndl), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleGuidelines();
+                    }
+                }
+                else
+                {
+                    int onhndl = ((TextureHandle)_off.TextureHandle).TexHandle;
+                    if (ImGui.ImageButton(new IntPtr(onhndl), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleGuidelines();
+                    }
+                }
                 ImGui.End();
             }
         }
@@ -686,7 +710,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             colors[(int)ImGuiCol.CheckMark] = new Vector4(0.184f, 0.407f, 0.193f, 1.00f);
             colors[(int)ImGuiCol.SliderGrab] = new Vector4(0.26f, 0.59f, 0.98f, 0.78f);
             colors[(int)ImGuiCol.SliderGrabActive] = new Vector4(0.26f, 0.59f, 0.98f, 1.00f);
-            colors[(int)ImGuiCol.Button] = new Vector4(0.71f, 0.78f, 0.69f, 0.40f);
+            colors[(int)ImGuiCol.Button] = new Vector4(0.71f, 0.78f, 0.69f, 0f);
             colors[(int)ImGuiCol.ButtonHovered] = new Vector4(0.725f, 0.805f, 0.702f, 1.00f);
             colors[(int)ImGuiCol.ButtonActive] = new Vector4(0.793f, 0.900f, 0.836f, 1.00f);
             colors[(int)ImGuiCol.Header] = new Vector4(0.71f, 0.78f, 0.69f, 0.31f);

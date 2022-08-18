@@ -85,6 +85,14 @@ namespace Fusee.Examples.SQLiteViewer.Core
             get { return _isPlaying; }
         }
 
+        private bool _guideLinesOn = true;
+        public bool GuideLinesOn
+        {
+            get { return _guideLinesOn; }
+        }
+
+        private SceneNode _guidelines;
+
         private bool _isMouseDown = false;
         private float2 _lastClickedMousePos;
         private float _playerspeed = 5;
@@ -195,7 +203,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             _initialCamTransform = new float3(0, 5, 0);
 
             // 3D camera.
-            _camera = new Camera(ProjectionMethod.Perspective, 0.1f, 150, M.PiOver4, RenderLayers.Layer01)
+            _camera = new Camera(ProjectionMethod.Perspective, 0.1f, 500, M.PiOver4, RenderLayers.Layer01)
             {
                 Layer = 1,
                 BackgroundColor = _cameraBackgroundColor,
@@ -211,7 +219,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             };
 
             // Axes camera.
-            _camera3 = new Camera(ProjectionMethod.Perspective, 0.1f, 11.1f, M.PiOver4, RenderLayers.Layer02)
+            _camera3 = new Camera(ProjectionMethod.Perspective, 0.1f, 50, M.PiOver4, RenderLayers.Layer02)
             {
                 Layer = 2,
                 ClearColor = false,
@@ -263,7 +271,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             };
 
             // Shows 2D-Cameras viewing area.
-            SceneNode camera2Boundaries = new SceneNode
+            _guidelines = new SceneNode
             {
                 Name = "Camera2Boundaries",
                 Components =
@@ -299,7 +307,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 }
             };
 
-            cam2.Children.Add(camera2Boundaries);
+            cam2.Children.Add(_guidelines);
 
             // Set viewports: 2D camera is on top of 3D cameras viewport, axes camera is on the right side of 2D cameras viewport.
             _camera.Viewport = new float4(0, 0, 100, _mainCamViewportSize);
@@ -312,69 +320,18 @@ namespace Fusee.Examples.SQLiteViewer.Core
         }
 
         // Initialize coordinate axes, which will rotate according to 2D cameras viewing direction.
-        private void InitCoordAxes()
+        private async void InitCoordAxes()
         {
-            float axisThickness = 0.15f;
-            float axisLength = 2.5f;
 
             _coordinateAxesTransform = new Transform
             {
-                Translation = new float3(0, 0, 0),
+                Translation = new float3(0, -2f, -2f),
+                Rotation = new float3(0, 0, 0),
             };
-
-            _coordinateAxes = new SceneNode
-            {
-                Name = "Coordinate Axes",
-                Components =
-                {
-                    _coordinateLayer,
-                    _coordinateAxesTransform,
-
-                },
-                Children =
-                {
-
-                    new SceneNode
-                    {
-                        Name = "xAxis",
-                        Components =
-                        {
-                            new Transform
-                            {
-                                Translation = new float3(axisLength / 3, 0, 0),
-                            },
-                            MakeEffect.FromUnlit((float4)ColorUint.Red),
-                            SimpleMeshes.CreateCuboid(new float3(axisLength, axisThickness, axisThickness)),
-                        }
-                    },
-                    new SceneNode
-                    {
-                        Name = "yAxis",
-                        Components =
-                        {
-                            new Transform
-                            {
-                                Translation = new float3(0, axisLength / 3, 0),
-                            },
-                            MakeEffect.FromUnlit((float4)ColorUint.Green),
-                            SimpleMeshes.CreateCuboid(new float3(axisThickness, axisLength, axisThickness)),
-                        }
-                    },
-                    new SceneNode
-                    {
-                        Name = "zAxis",
-                        Components =
-                        {
-                            new Transform
-                            {
-                                Translation = new float3(0, 0, axisLength / 3),
-                            },
-                            MakeEffect.FromUnlit((float4)ColorUint.Blue),
-                            SimpleMeshes.CreateCuboid(new float3(axisThickness, axisThickness, axisLength)),
-                        }
-                    },
-                }
-            };
+            SceneContainer coordsScene = AssetStorage.Get<SceneContainer>("coords.fus");
+            _coordinateAxes = coordsScene.Children[0];
+            _coordinateAxes.Components.Add(_coordinateLayer);
+            _coordinateAxes.Components.Add(_coordinateAxesTransform);
 
             _scene.Children.Add(_coordinateAxes);
         }
@@ -532,7 +489,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     }
 
                     // Rotate coordinate axes based on 2D view.
-                    _coordinateAxesTransform.Rotation = new float3(_camera2Transform.Rotation.x, -_camera2Transform.Rotation.y, _camera2Transform.Rotation.z);
+                    _coordinateAxesTransform.Rotation = new float3(0, 0, -_camera2Transform.Rotation.y);
                 }
 
                 // Zoom in.
@@ -602,6 +559,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
         public void ResetCamera()
         {
             _cameraTransform.Translation = _initCameraPos;
+        }
+
+        public void ToggleGuidelines()
+        {
+            _guideLinesOn = !_guideLinesOn;
+            _guidelines.EnumChildren.ToList().ForEach(child => child.EnumComponents.ToList().ForEach(component => component.Active = _guideLinesOn));
         }
 
         public void OnPlayDown()
