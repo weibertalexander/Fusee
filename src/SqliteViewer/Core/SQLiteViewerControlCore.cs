@@ -4,6 +4,7 @@ using Fusee.Engine.Common;
 using Fusee.Engine.Core;
 using Fusee.Engine.Core.Scene;
 using Fusee.Math.Core;
+using Fusee.ImGuiImp.Desktop.Templates;
 using Fusee.PointCloud.Common;
 using Fusee.PointCloud.Core.Scene;
 using Fusee.PointCloud.Potree.V2;
@@ -12,7 +13,7 @@ using System.Collections.Generic;
 
 namespace Fusee.Examples.SQLiteViewer.Core
 {
-    internal class SQLiteViewerControlCore : ImGuiDesktop.Templates.FuseeControlToTexture, IDisposable
+    internal class SQLiteViewerControlCore : FuseeControlToTexture, IDisposable
     {
         public bool UseWPF { get; set; }
         public bool ReadyToLoadNewFile { get; private set; }
@@ -390,7 +391,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 {
                     DepthRenderBufferHandle = -1,
                     FrameBufferHandle = -1,
-                    TexHandle = -1
+                    //TexHandle = -1
                 };
             }
 
@@ -419,7 +420,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             _sceneRenderer.Render(_rc);
 
             ReadyToLoadNewFile = true;
-            return RenderTexture.TextureHandle;
+            return RenderTexture?.TextureHandle;
         }
 
         public override void Update(bool allowInput)

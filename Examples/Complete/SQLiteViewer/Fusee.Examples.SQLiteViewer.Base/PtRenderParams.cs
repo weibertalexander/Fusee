@@ -19,7 +19,7 @@ namespace Fusee.Examples.SQLiteViewer.NoGui
         public string PathToOocFile = @"C:\Praktikum\datenbanken\potree\220202002-0000";
 
         public ShaderEffect DepthPassEf;
-        public PointCloudSurfaceEffect ColorPassEf;
+        public SurfaceEffectPointCloud ColorPassEf;
 
         private PointShape _shape = PointShape.Paraboloid;
         public PointShape Shape

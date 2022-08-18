@@ -24,7 +24,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
         //public string PathToOocFile = "";
 
         public ShaderEffect DepthPassEf;
-        public PointCloudSurfaceEffect ColorPassEf;
+        public SurfaceEffectPointCloud ColorPassEf;
 
         private PointShape _shape = PointShape.Paraboloid;
         public PointShape Shape
@@ -108,7 +108,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
         }
 
-        private int _ptThreshold = 100000;
+        private int _ptThreshold = 10000;
 
         public int PointThreshold
         {

@@ -31,12 +31,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         private SceneRendererForward _sceneRenderer;
 
-        private CanvasRenderMode _canvasRenderMode;
-        private float _canvasWidth;
-        private float _canvasHeight;
-
         private CanvasNode _canvasNode;
-        private FontMap _fontMap;
 
         private Camera _camera;
         private Camera _camera2;

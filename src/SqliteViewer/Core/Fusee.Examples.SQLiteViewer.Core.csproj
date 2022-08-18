@@ -39,7 +39,7 @@
 		<ProjectReference Include="..\..\Engine\Core\Fusee.Engine.Core.csproj" />
 		<ProjectReference Include="..\..\Engine\GUI\Fusee.Engine.Gui.csproj" />
 		<ProjectReference Include="..\..\Engine\Imp\Graphics\Desktop\Fusee.Engine.Imp.Graphics.Desktop.csproj" />
-		<ProjectReference Include="..\..\ImGui\Desktop\Fusee.ImGui.Desktop\Fusee.ImGuiDesktop.csproj" />
+		<ProjectReference Include="..\..\ImGui\Desktop\Fusee.ImGui.Desktop\Fusee.ImGuiImp.Desktop.csproj" />
 		<ProjectReference Include="..\..\Math\Core\Fusee.Math.Core.csproj" />
 		<ProjectReference Include="..\..\PointCloud\Common\Fusee.PointCloud.Common.csproj" />
 		<ProjectReference Include="..\..\PointCloud\Core\Fusee.PointCloud.Core.csproj" />
