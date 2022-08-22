@@ -8,6 +8,7 @@ using Fusee.ImGuiImp.Desktop.Templates;
 using Fusee.PointCloud.Common;
 using Fusee.PointCloud.Core.Scene;
 using Fusee.PointCloud.Potree.V2;
+using Fusee.Engine.Core.Effects;
 using System;
 using System.Collections.Generic;
 
@@ -47,14 +48,24 @@ namespace Fusee.Examples.SQLiteViewer.Core
         private Transform _coordinateAxesTransform;
 
         private float4 _cameraBackgroundColor = (float4)ColorUint.Black;
+        private float4 _camera2BackgroundColor = (float4)ColorUint.Black;
 
-        public float4 CameraBackgroundColor
+        public float4 Camera1BackgroundColor
         {
             get { return _cameraBackgroundColor; }
             set
             {
                 _cameraBackgroundColor = value;
                 _camera.BackgroundColor = value;
+            }
+        }
+
+        public float4 Camera2BackgroundColor
+        {
+            get { return _camera2BackgroundColor; }
+            set
+            {
+                _camera2BackgroundColor = value;
                 _camera2.BackgroundColor = value;
             }
         }
@@ -62,6 +73,11 @@ namespace Fusee.Examples.SQLiteViewer.Core
         // Pointcloud related.
         private Potree2Reader[] _readerList;
         private PointCloudComponent[] _pointCloudComponentList;
+        private SurfaceEffectPointCloud[] _colorPassEfs;
+        public void SetColorPassEfColor(int i, float4 color)
+        {
+            _colorPassEfs[i].SurfaceInput.Albedo = color;
+        }
 
         private int _startFootpulse;
         private int _endFootpulse;
@@ -155,7 +171,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         public SQLiteViewerControlCore(RenderContext rc) : base(rc)
         {
-            Diagnostics.Warn("called constructor");
             _rc = rc;
             Init();
         }
@@ -165,7 +180,16 @@ namespace Fusee.Examples.SQLiteViewer.Core
             try
             {
                 PtRenderingParams.Instance.DepthPassEf = MakePointCloudEffect.ForDepthPass(PtRenderingParams.Instance.Size, PtRenderingParams.Instance.PtMode, PtRenderingParams.Instance.Shape);
-                PtRenderingParams.Instance.ColorPassEf = MakePointCloudEffect.ForColorPass(PtRenderingParams.Instance.Size, PtRenderingParams.Instance.ColorMode, PtRenderingParams.Instance.PtMode, PtRenderingParams.Instance.Shape, PtRenderingParams.Instance.EdlStrength, PtRenderingParams.Instance.EdlNoOfNeighbourPx);
+
+                PtRenderingParams.Instance.ColorPassEf1 = MakePointCloudEffect.ForColorPass(PtRenderingParams.Instance.Size, PtRenderingParams.Instance.ColorMode, PtRenderingParams.Instance.PtMode, PtRenderingParams.Instance.Shape, PtRenderingParams.Instance.EdlStrength, PtRenderingParams.Instance.EdlNoOfNeighbourPx);
+                PtRenderingParams.Instance.ColorPassEf2 = MakePointCloudEffect.ForColorPass(PtRenderingParams.Instance.Size, PtRenderingParams.Instance.ColorMode, PtRenderingParams.Instance.PtMode, PtRenderingParams.Instance.Shape, PtRenderingParams.Instance.EdlStrength, PtRenderingParams.Instance.EdlNoOfNeighbourPx);
+                PtRenderingParams.Instance.ColorPassEf3 = MakePointCloudEffect.ForColorPass(PtRenderingParams.Instance.Size, PtRenderingParams.Instance.ColorMode, PtRenderingParams.Instance.PtMode, PtRenderingParams.Instance.Shape, PtRenderingParams.Instance.EdlStrength, PtRenderingParams.Instance.EdlNoOfNeighbourPx);
+                PtRenderingParams.Instance.ColorPassEf4 = MakePointCloudEffect.ForColorPass(PtRenderingParams.Instance.Size, PtRenderingParams.Instance.ColorMode, PtRenderingParams.Instance.PtMode, PtRenderingParams.Instance.Shape, PtRenderingParams.Instance.EdlStrength, PtRenderingParams.Instance.EdlNoOfNeighbourPx);
+                PtRenderingParams.Instance.ColorPassEf8 = MakePointCloudEffect.ForColorPass(PtRenderingParams.Instance.Size, PtRenderingParams.Instance.ColorMode, PtRenderingParams.Instance.PtMode, PtRenderingParams.Instance.Shape, PtRenderingParams.Instance.EdlStrength, PtRenderingParams.Instance.EdlNoOfNeighbourPx);
+                PtRenderingParams.Instance.ColorPassEf9 = MakePointCloudEffect.ForColorPass(PtRenderingParams.Instance.Size, PtRenderingParams.Instance.ColorMode, PtRenderingParams.Instance.PtMode, PtRenderingParams.Instance.Shape, PtRenderingParams.Instance.EdlStrength, PtRenderingParams.Instance.EdlNoOfNeighbourPx);
+
+                _colorPassEfs = new SurfaceEffectPointCloud[] { PtRenderingParams.Instance.ColorPassEf1, PtRenderingParams.Instance.ColorPassEf2, PtRenderingParams.Instance.ColorPassEf3, PtRenderingParams.Instance.ColorPassEf4, PtRenderingParams.Instance.ColorPassEf8, PtRenderingParams.Instance.ColorPassEf9 };
+
                 PtRenderingParams.Instance.PointThresholdHandler = OnThresholdChanged;
                 PtRenderingParams.Instance.ProjectedSizeModifierHandler = OnProjectedSizeModifierChanged;
 
@@ -204,7 +228,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             _initialCamTransform = new float3(0, 5, 0);
 
             // 3D camera.
-            _camera = new Camera(ProjectionMethod.Perspective, 0.1f, 500, M.PiOver4, RenderLayers.Layer01)
+            _camera = new Camera(ProjectionMethod.Perspective, 0.1f, 200, M.PiOver4, RenderLayers.Layer01)
             {
                 Layer = 1,
                 BackgroundColor = _cameraBackgroundColor,
@@ -367,7 +391,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                         _pointCloudLayer,
                         cloudTransform,
                         PtRenderingParams.Instance.DepthPassEf,
-                        PtRenderingParams.Instance.ColorPassEf,
+                        _colorPassEfs[i],
                         _pointCloudComponentList[i]
                     }
                 };
@@ -398,10 +422,17 @@ namespace Fusee.Examples.SQLiteViewer.Core
             if (PtRenderingParams.Instance.EdlStrength != 0f)
             {
                 PtRenderingParams.Instance.DepthPassEf.Active = true;
-                PtRenderingParams.Instance.ColorPassEf.Active = false;
+                foreach (var ef in _colorPassEfs)
+                {
+                    ef.Active = false;
+                }
 
                 _camera.Viewport = new float4(0, 0, 100, 100);  // If Viewport is not "reset", the DepthTex will be rendered to only half of the camera (?????).
-                _camera.RenderTexture = PtRenderingParams.Instance.ColorPassEf.DepthTex;
+                foreach (var ef in _colorPassEfs)
+                {
+                    _camera.RenderTexture = ef.DepthTex;
+                }
+
 
                 _sceneRenderer.Render(_rc);
 
@@ -410,7 +441,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _camera.RenderTexture = null;
 
                 PtRenderingParams.Instance.DepthPassEf.Active = false;
-                PtRenderingParams.Instance.ColorPassEf.Active = true;
+
+                foreach (var ef in _colorPassEfs)
+                {
+                    ef.Active = true;
+                }
+
             }
 
             _camera.RenderTexture = RenderTexture;
@@ -553,8 +589,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
             RenderTexture = WritableTexture.CreateAlbedoTex(width, height, new ImagePixelFormat(ColorFormat.RGBA));
 
             if (PtRenderingParams.Instance.EdlStrength == 0f) return;
-            PtRenderingParams.Instance.ColorPassEf.DepthTex?.Dispose();
-            PtRenderingParams.Instance.ColorPassEf.DepthTex = WritableTexture.CreateDepthTex((int)(_width * (_camera.Viewport.z / 100)), (int)(_height * (_camera.Viewport.w / 100)), new ImagePixelFormat(ColorFormat.Depth24));
+            foreach (var ef in _colorPassEfs)
+            {
+                ef.DepthTex?.Dispose();
+                ef.DepthTex = WritableTexture.CreateDepthTex((int)(_width * (_camera.Viewport.z / 100)), (int)(_height * (_camera.Viewport.w / 100)), new ImagePixelFormat(ColorFormat.Depth24));
+            }
+            //PtRenderingParams.Instance.ColorPassEf.DepthTex = WritableTexture.CreateDepthTex((int)(_width * (_camera.Viewport.z / 100)), (int)(_height * (_camera.Viewport.w / 100)), new ImagePixelFormat(ColorFormat.Depth24));
         }
 
         public void ResetCamera()
@@ -639,7 +679,11 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 if (disposing)
                 {
                     RenderTexture?.Dispose();
-                    PtRenderingParams.Instance.ColorPassEf.DepthTex?.Dispose();
+                    foreach (var ef in _colorPassEfs)
+                    {
+                        ef.DepthTex?.Dispose();
+
+                    }
                     Diagnostics.Warn("Disposing pointcloud " + PtRenderingParams.Instance.PathToSqliteFile);
                 }
                 disposedValue = true;

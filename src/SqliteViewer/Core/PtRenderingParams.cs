@@ -21,10 +21,15 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         //public string PathToSqliteFile = @"C:\Praktikum\datenbanken\220202002-0000.sqlite";
         public string PathToSqliteFile = "";
-        //public string PathToOocFile = "";
+
 
         public ShaderEffect DepthPassEf;
-        public SurfaceEffectPointCloud ColorPassEf;
+        public SurfaceEffectPointCloud ColorPassEf1;
+        public SurfaceEffectPointCloud ColorPassEf2;
+        public SurfaceEffectPointCloud ColorPassEf3;
+        public SurfaceEffectPointCloud ColorPassEf4;
+        public SurfaceEffectPointCloud ColorPassEf8;
+        public SurfaceEffectPointCloud ColorPassEf9;
 
         private PointShape _shape = PointShape.Paraboloid;
         public PointShape Shape
@@ -33,7 +38,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
             set
             {
                 _shape = value;
-                ColorPassEf.PointShape = (int)_shape;
+                ColorPassEf1.PointShape = (int)_shape;
+                ColorPassEf2.PointShape = (int)_shape;
+                ColorPassEf3.PointShape = (int)_shape;
+                ColorPassEf4.PointShape = (int)_shape;
+                ColorPassEf8.PointShape = (int)_shape;
+                ColorPassEf9.PointShape = (int)_shape;
                 DepthPassEf.SetFxParam(UniformNameDeclarations.PointShapeHash, (int)Shape);
             }
         }
@@ -45,12 +55,16 @@ namespace Fusee.Examples.SQLiteViewer.Core
             set
             {
                 _ptMode = value;
-                ColorPassEf.PointSizeMode = (int)_ptMode;
+                ColorPassEf1.PointSizeMode = (int)_ptMode;
+                ColorPassEf2.PointSizeMode = (int)_ptMode;
+                ColorPassEf3.PointSizeMode = (int)_ptMode;
+                ColorPassEf4.PointSizeMode = (int)_ptMode;
+                ColorPassEf8.PointSizeMode = (int)_ptMode;
+                ColorPassEf9.PointSizeMode = (int)_ptMode;
                 DepthPassEf.SetFxParam(UniformNameDeclarations.PointSizeModeHash, (int)_ptMode);
             }
         }
 
-        //private PointColorMode _colorMode = PointColorMode.VertexColor0;
         private ColorMode _colorMode = ColorMode.VertexColor0;
 
         public ColorMode ColorMode
@@ -59,7 +73,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
             set
             {
                 _colorMode = value;
-                ColorPassEf.ColorMode = (int)_colorMode;
+                ColorPassEf1.ColorMode = (int)_colorMode;
+                ColorPassEf2.ColorMode = (int)_colorMode;
+                ColorPassEf3.ColorMode = (int)_colorMode;
+                ColorPassEf4.ColorMode = (int)_colorMode;
+                ColorPassEf8.ColorMode = (int)_colorMode;
+                ColorPassEf9.ColorMode = (int)_colorMode;
             }
         }
 
@@ -71,7 +90,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
             {
                 _size = value;
                 DepthPassEf.SetFxParam(UniformNameDeclarations.PointSizeHash, Size);
-                ColorPassEf.PointSize = _size;
+                ColorPassEf1.PointSize = _size;
+                ColorPassEf2.PointSize = _size;
+                ColorPassEf3.PointSize = _size;
+                ColorPassEf4.PointSize = _size;
+                ColorPassEf8.PointSize = _size;
+                ColorPassEf9.PointSize = _size;
             }
         }
 
@@ -82,7 +106,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
             set
             {
                 _edlNoOfNeighbourPx = value;
-                ColorPassEf.EDLNeighbourPixels = _edlNoOfNeighbourPx;
+                ColorPassEf1.EDLNeighbourPixels = _edlNoOfNeighbourPx;
+                ColorPassEf2.EDLNeighbourPixels = _edlNoOfNeighbourPx;
+                ColorPassEf3.EDLNeighbourPixels = _edlNoOfNeighbourPx;
+                ColorPassEf4.EDLNeighbourPixels = _edlNoOfNeighbourPx;
+                ColorPassEf8.EDLNeighbourPixels = _edlNoOfNeighbourPx;
+                ColorPassEf9.EDLNeighbourPixels = _edlNoOfNeighbourPx;
             }
         }
 
@@ -93,11 +122,16 @@ namespace Fusee.Examples.SQLiteViewer.Core
             set
             {
                 _edlStrength = value;
-                ColorPassEf.EDLStrength = _edlStrength;
+                ColorPassEf1.EDLStrength = _edlStrength;
+                ColorPassEf2.EDLStrength = _edlStrength;
+                ColorPassEf3.EDLStrength = _edlStrength;
+                ColorPassEf4.EDLStrength = _edlStrength;
+                ColorPassEf8.EDLStrength = _edlStrength;
+                ColorPassEf9.EDLStrength = _edlStrength;
             }
         }
 
-        private float _projSizeMod = 0.001f;
+        private float _projSizeMod = 0f;
         public float ProjectedSizeModifier
         {
             get { return _projSizeMod; }
@@ -108,7 +142,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
         }
 
-        private int _ptThreshold = 10000;
+        private int _ptThreshold = 10000000;
 
         public int PointThreshold
         {
