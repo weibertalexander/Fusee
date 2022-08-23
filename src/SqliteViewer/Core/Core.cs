@@ -431,8 +431,13 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
                 // Video Player Settings
                 ImGui.BeginGroup();
-                ImGui.NewLine();
 
+                ImGui.NewLine();
+                _currentFootpulse = _sqliteViewerControl.CurrentFootpulse;
+                ImGui.InputFloat("Aktueller footpulse", ref _currentFootpulse, 1, 10, String.Format("{0:0.#}", _currentFootpulse));
+                _sqliteViewerControl.CurrentFootpulse = _currentFootpulse;
+
+                ImGui.NewLine();
                 ImGui.InputInt("Sprunggröße", ref _stepsize, 1, 10);
                 if (_stepsize < 0) _stepsize = 0;
 
@@ -441,10 +446,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 if (_playerspeed < 1) _playerspeed = 1;
                 _sqliteViewerControl.Playerspeed = _playerspeed;
 
-                ImGui.NewLine();
-                _currentFootpulse = _sqliteViewerControl.CurrentFootpulse;
-                ImGui.InputFloat("Aktueller footpulse", ref _currentFootpulse, 1, 10, String.Format("{0:0.#}", _currentFootpulse));
-                _sqliteViewerControl.CurrentFootpulse = _currentFootpulse;
 
                 ImGui.EndGroup();
 
@@ -777,10 +778,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 };
 
                 ImGui.EndGroup();
-
-                ImGui.NewLine();
-                ImGui.NewLine();
-
 
                 ImGui.EndGroup();
                 ImGui.NewLine();
