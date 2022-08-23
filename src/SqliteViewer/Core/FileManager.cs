@@ -8,6 +8,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
     {
 
         private static string _ptdirectory = "C:/PROGRA~1/PotreeConverter";
+
         public static string PtDirectory
         {
             get { return _ptdirectory; }
@@ -34,7 +35,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
         }
 
         private static int _footpulseSize = 10;
-        
+
         public static int FootpulseSize
         {
             get { return _footpulseSize; }
@@ -411,7 +412,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 {
                     System.Diagnostics.Process processCC = new System.Diagnostics.Process();
                     System.Diagnostics.ProcessStartInfo startInfoCC = new System.Diagnostics.ProcessStartInfo("cmd.exe");
-                    startInfoCC.Arguments = $"/C {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_{file}.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SET_ACTIVE_SF 0 -SF_CONVERT_TO_RGB FALSE -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.laz";
+                    startInfoCC.Arguments = $"/C {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_{file}.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SET_ACTIVE_SF 0 -SF_CONVERT_TO_RGB FALSE -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.las";
                     processCC.StartInfo = startInfoCC;
                     processCC.Start();
                     processCC.WaitForExit();
@@ -450,7 +451,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 {
                     System.Diagnostics.Process processPT = new System.Diagnostics.Process();
                     System.Diagnostics.ProcessStartInfo startInfoPT = new System.Diagnostics.ProcessStartInfo("cmd.exe");
-                    startInfoPT.Arguments = $"/C {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_{file}";
+                    startInfoPT.Arguments = $"/C {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.las -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_{file}";
                     processPT.StartInfo = startInfoPT;
                     processPT.Start();
                     processPT.WaitForExit();
@@ -500,7 +501,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 {
                     DeletePLY(nameoffile);
                 }
-                if (File.Exists($"C:/Praktikum/datenbanken/laz/{nameoffile}.laz"))
+                if (File.Exists($"C:/Praktikum/datenbanken/laz/{nameoffile}.las"))
                 {
                     DeleteLAZ(nameoffile);
                 }
@@ -648,20 +649,20 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
                 string[] scannerFiles =
                 {
-                        $"HSPA-Master",
-                        $"HSPA-Slave",
-                        $"HSPB-Master",
-                        $"HSPB-Slave",
-                        $"HRS1",
-                        $"HRS2"
-                    };
+                    $"HSPA-Master",
+                    $"HSPA-Slave",
+                    $"HSPB-Master",
+                    $"HSPB-Slave",
+                    $"HRS1",
+                    $"HRS2"
+                };
 
                 // Generate las files from ply with cloudcompare.
                 foreach (string file in scannerFiles)
                 {
                     System.Diagnostics.Process processCC = new System.Diagnostics.Process();
                     System.Diagnostics.ProcessStartInfo startInfoCC = new System.Diagnostics.ProcessStartInfo("cmd.exe");
-                    startInfoCC.Arguments = $"/C {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_{file}.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SET_ACTIVE_SF 0 -SF_CONVERT_TO_RGB FALSE -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.laz";
+                    startInfoCC.Arguments = $"/C {_ccdirectory}/CloudCompare.exe -SILENT -C_EXPORT_FMT LAS -o C:/Praktikum/datenbanken/ply/{nameoffile}_{file}.ply -AUTO_SAVE OFF -NO_TIMESTAMP -RENAME_SF LAST Intensity -SET_ACTIVE_SF 0 -SF_CONVERT_TO_RGB FALSE -SAVE_CLOUDS FILE C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.las";
                     processCC.StartInfo = startInfoCC;
                     processCC.Start();
                     processCC.WaitForExit();
@@ -700,7 +701,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 {
                     System.Diagnostics.Process processPT = new System.Diagnostics.Process();
                     System.Diagnostics.ProcessStartInfo startInfoPT = new System.Diagnostics.ProcessStartInfo("cmd.exe");
-                    startInfoPT.Arguments = $"/C {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.laz -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_{file}";
+                    startInfoPT.Arguments = $"/C {_ptdirectory}/PotreeConverter.exe C:/Praktikum/datenbanken/laz/{nameoffile}_{file}.las -o C:/Praktikum/datenbanken/potree/{nameoffile}/{nameoffile}_{file}";
                     processPT.StartInfo = startInfoPT;
                     processPT.Start();
                     processPT.WaitForExit();
@@ -814,8 +815,8 @@ namespace Fusee.Examples.SQLiteViewer.Core
         // Delete las/laz files after converting to octree.
         private static void DeleteLAZ(string filename)
         {
-            File.Delete($"C:/Praktikum/datenbanken/laz/{filename}.laz");
-            Diagnostics.Debug($"Deleted {filename}.laz.");
+            File.Delete($"C:/Praktikum/datenbanken/laz/{filename}.las");
+            Diagnostics.Debug($"Deleted {filename}.las.");
         }
     }
 }
