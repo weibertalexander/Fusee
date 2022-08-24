@@ -86,6 +86,7 @@ namespace Fusee.Examples.PointCloudPotree2.PotreeImGui
             get { return _edlStrength; }
             set
             {
+                Console.WriteLine(value);
                 _edlStrength = value;
                 ColorPassEf.EDLStrength = _edlStrength;
             }

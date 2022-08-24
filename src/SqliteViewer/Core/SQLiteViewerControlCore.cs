@@ -42,7 +42,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
         private Transform _camera3Transform;
 
         private float3 _initialCamTransform;
-        private float _mainCamViewportSize = 70;
 
         private SceneNode _coordinateAxes;
         private Transform _coordinateAxesTransform;
@@ -228,7 +227,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             _initialCamTransform = new float3(0, 5, 0);
 
             // 3D camera.
-            _camera = new Camera(ProjectionMethod.Perspective, 0.1f, 200, M.PiOver4, RenderLayers.Layer01)
+            _camera = new Camera(ProjectionMethod.Perspective, 0.1f, 50, M.PiOver4, RenderLayers.Layer01)
             {
                 Layer = 1,
                 BackgroundColor = _cameraBackgroundColor,
@@ -333,11 +332,16 @@ namespace Fusee.Examples.SQLiteViewer.Core
             };
 
             cam2.Children.Add(_guidelines);
-
+            /*
             // Set viewports: 2D camera is on top of 3D cameras viewport, axes camera is on the right side of 2D cameras viewport.
             _camera.Viewport = new float4(0, 0, 100, _mainCamViewportSize);
             _camera2.Viewport = new float4(0, _mainCamViewportSize, 100, 100 - _mainCamViewportSize);
             _camera3.Viewport = new float4(_mainCamViewportSize + ((100 - _mainCamViewportSize) / 4), _mainCamViewportSize + ((100 - _mainCamViewportSize) / 4), 15, 15);
+            */
+            _camera.Viewport = new float4(0, 0, 100, 100);
+            _camera2.Viewport = new float4(0, 0, 100, 100);
+            _camera3.Viewport = new float4(0, 0, 100, 10);
+
 
             _scene.Children.Add(cam);
             _scene.Children.Add(cam2);
@@ -399,12 +403,20 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
         }
 
-        private WritableTexture RenderTexture;
+        private WritableTexture RenderTexture3D;
+        private WritableTexture RenderTexture2D;
+
         private bool disposedValue;
 
+        public bool _render2DFrame = false;
+        public bool Render2DFrame
+        {
+            set { _render2DFrame = value; }
+        }
         // RenderAFrame is called once a frame
         protected override ITextureHandle RenderAFrame()
         {
+
             ReadyToLoadNewFile = false;
 
             if (_closingRequested)
@@ -419,44 +431,56 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 };
             }
 
-            if (PtRenderingParams.Instance.EdlStrength != 0f)
+            if (_render2DFrame)
             {
+                _camera2.RenderTexture = RenderTexture2D;
+                _camera3.RenderTexture = RenderTexture2D;
+
+                _sceneRenderer.Render(_rc);
+                ReadyToLoadNewFile = true;
+
+                return RenderTexture2D?.TextureHandle;
+
+            }
+            else
+            {
+
                 PtRenderingParams.Instance.DepthPassEf.Active = true;
+
+                // Turn off every color pass
                 foreach (var ef in _colorPassEfs)
                 {
                     ef.Active = false;
                 }
 
-                _camera.Viewport = new float4(0, 0, 100, 100);  // If Viewport is not "reset", the DepthTex will be rendered to only half of the camera (?????).
+                // render depth tex only (from each color pass)
                 foreach (var ef in _colorPassEfs)
                 {
-                    _camera.RenderTexture = ef.DepthTex;
+                    //_camera.RenderTexture = ef.DepthTex;
+                    _camera.RenderTexture = RenderTexture3D;
+                    _sceneRenderer.Render(_rc);
                 }
-
-
-                _sceneRenderer.Render(_rc);
-
-                _camera.Viewport = new float4(0, 0, 100, _mainCamViewportSize);
-
-                _camera.RenderTexture = null;
 
                 PtRenderingParams.Instance.DepthPassEf.Active = false;
 
                 foreach (var ef in _colorPassEfs)
                 {
                     ef.Active = true;
+                    //_sceneRenderer.Render(_rc);
                 }
 
+
+                _camera.RenderTexture = RenderTexture3D;
+                //_camera2.RenderTexture = RenderTexture2D;
+                //_camera3.RenderTexture = RenderTexture2D;
+
+                _sceneRenderer.Render(_rc);
+
+                ReadyToLoadNewFile = true;
+
+                return RenderTexture3D?.TextureHandle;
             }
 
-            _camera.RenderTexture = RenderTexture;
-            _camera2.RenderTexture = RenderTexture;
-            _camera3.RenderTexture = RenderTexture;
-
-            _sceneRenderer.Render(_rc);
-
-            ReadyToLoadNewFile = true;
-            return RenderTexture?.TextureHandle;
         }
 
         public override void Update(bool allowInput)
@@ -479,7 +503,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     _lastClickedMousePos = Input.Mouse.Position;
                     _isMouseDown = true;
                 }
-
+                /*
                 // Mouse is over 2D camera.
                 if (_lastClickedMousePos.y <= (_height / 100 * (100 - _mainCamViewportSize + 10)))  // + 10 arbitrary, dunno what the actual imgui viewport size is
                 {
@@ -488,7 +512,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                         _camera2Transform.Translate(new float3(-Input.Mouse.Velocity.x * Time.DeltaTime * _camera2MouseSensitivity, Input.Mouse.Velocity.y * Time.DeltaTime * _camera2MouseSensitivity, 0));
                     }
                 }
-
+                */
                 // Mouse is over 3D camera.
                 else
                 {
@@ -509,8 +533,9 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _isMouseDown = false;
             }
 
+
             // Zoom and controls with right mouse button over 2D camera.
-            if (Input.Mouse.Position.y <= (_height / 100 * (100 - _mainCamViewportSize + 10)))
+            if (false)
             {
                 // 2D Rotation with right mouse button.
                 if (Input.Mouse.RightButton && allowInput)
@@ -539,6 +564,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
 
             }
+
             // Zoom over 3D camera.
             else
             {
@@ -575,6 +601,9 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _pointCloud.PointCloudImp.MinProjSizeModifier = newValue;
         }
 
+        public int width2d = 10;
+        public int height2d = 10;
+
         // Is called when the window was resized
         protected override void Resize(int width, int height)
         {
@@ -585,15 +614,27 @@ namespace Fusee.Examples.SQLiteViewer.Core
             _height = height;
 
             // delete old texture, generate new
-            RenderTexture?.Dispose();
-            RenderTexture = WritableTexture.CreateAlbedoTex(width, height, new ImagePixelFormat(ColorFormat.RGBA));
+            if (_render2DFrame)
+            {
+                RenderTexture2D?.Dispose();
+                RenderTexture2D = WritableTexture.CreateAlbedoTex(width2d, height2d, new ImagePixelFormat(ColorFormat.RGBA));
+            }
+            else
+            {
+                RenderTexture3D?.Dispose();
+                RenderTexture3D = WritableTexture.CreateAlbedoTex(width, height, new ImagePixelFormat(ColorFormat.RGBA));
+
+            }
 
             if (PtRenderingParams.Instance.EdlStrength == 0f) return;
             foreach (var ef in _colorPassEfs)
             {
                 ef.DepthTex?.Dispose();
-                ef.DepthTex = WritableTexture.CreateDepthTex((int)(_width * (_camera.Viewport.z / 100)), (int)(_height * (_camera.Viewport.w / 100)), new ImagePixelFormat(ColorFormat.Depth24));
+                ef.DepthTex = WritableTexture.CreateDepthTex((int)(_width), (int)(_height), new ImagePixelFormat(ColorFormat.Depth24));
             }
+            _camera.RenderTexture = RenderTexture3D;
+            _camera2.RenderTexture = RenderTexture2D;
+            _camera3.RenderTexture = RenderTexture2D;
             //PtRenderingParams.Instance.ColorPassEf.DepthTex = WritableTexture.CreateDepthTex((int)(_width * (_camera.Viewport.z / 100)), (int)(_height * (_camera.Viewport.w / 100)), new ImagePixelFormat(ColorFormat.Depth24));
         }
 
@@ -678,13 +719,13 @@ namespace Fusee.Examples.SQLiteViewer.Core
             {
                 if (disposing)
                 {
-                    RenderTexture?.Dispose();
+                    RenderTexture3D?.Dispose();
+                    RenderTexture2D?.Dispose();
                     foreach (var ef in _colorPassEfs)
                     {
                         ef.DepthTex?.Dispose();
 
                     }
-                    Diagnostics.Warn("Disposing pointcloud " + PtRenderingParams.Instance.PathToSqliteFile);
                 }
                 disposedValue = true;
             }

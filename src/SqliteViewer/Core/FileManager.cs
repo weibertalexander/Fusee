@@ -159,6 +159,11 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         #endregion Getters
 
+        public static void OpenFolderWithExplorer(string path)
+        {
+            System.Diagnostics.Process.Start(path);
+        }
+
         /*
         // Generate multiple pointclouds from one sqlite file.
         public static void CreateOctreesFromDB(string filename)

@@ -56,7 +56,8 @@ namespace Fusee.Examples.SQLiteViewer.Core
         private static int _stepsize = 10;
         private static float _playerspeed = 5f;
 
-        private static bool _isMouseInsideFuControl;
+        private static bool _isMouseInside3DWindow;
+        private static bool _isMouseInside2DWindow;
 
         // 2D-Camera guiding lines textures.
         private ExposedTexture _on;
@@ -258,7 +259,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
         {
             if (_sqliteViewerControl != null)
             {
-                _sqliteViewerControl.Update(_isMouseInsideFuControl);
+                _sqliteViewerControl.Update(true);
                 if (_sqliteViewerControl.CurrentFootpulse >= _sqliteViewerControl.EndFootpulse)
                 {
                     if (File.Exists(FileManager.GetDBDir() + FileManager.NextFile))
@@ -337,37 +338,68 @@ namespace Fusee.Examples.SQLiteViewer.Core
             if (_sqliteViewerControl != null)
             {
                 // Fusee Viewport
-                ImGui.Begin("Viewport",
-              ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse);
+                ImGui.Begin("3D Viewport",
+                ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse);
 
-                var parentMin = ImGui.GetWindowContentRegionMin();
-                var parentMax = ImGui.GetWindowContentRegionMax();
-                var size = parentMax - parentMin;
+                var parentMin3D = ImGui.GetWindowContentRegionMin();
+                var parentMax3D = ImGui.GetWindowContentRegionMax();
+                var size3D = parentMax3D - parentMin3D;
 
                 // Using a Child allow to fill all the space of the window.
                 // It also allows customization
-                ImGui.BeginChild("GameRender", size, true, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove);
+                ImGui.BeginChild("3DGameRender", size3D, true, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove);
 
-                var fuseeViewportMin = ImGui.GetWindowContentRegionMin();
-                var fuseeViewportMax = ImGui.GetWindowContentRegionMax();
-                var fuseeViewportSize = fuseeViewportMax - fuseeViewportMin;
-                var fuseeViewportPos = ImGui.GetWindowPos();
+                var fuseeViewportMin3D = ImGui.GetWindowContentRegionMin();
+                var fuseeViewportMax3D = ImGui.GetWindowContentRegionMax();
+                var fuseeViewportSize3D = fuseeViewportMax3D - fuseeViewportMin3D;
+                var fuseeViewportPos3D = ImGui.GetWindowPos();
 
+                _sqliteViewerControl._render2DFrame = false;
+                var hndl3D = _sqliteViewerControl.RenderToTexture((int)fuseeViewportSize3D.X, (int)fuseeViewportSize3D.Y);
 
-                var hndl = _sqliteViewerControl.RenderToTexture((int)fuseeViewportSize.X, (int)fuseeViewportSize.Y);
-
-
-                ImGui.Image(hndl, fuseeViewportSize,
+                ImGui.Image(hndl3D, fuseeViewportSize3D,
                     new Vector2(0, 1),
                     new Vector2(1, 0));
+
+                // check if mouse is inside window, if true, accept update() inputs
+                _isMouseInside3DWindow = ImGui.IsItemHovered();
+
+                ImGui.EndChild();
+                
+                ImGui.Begin("2D Viewport",
+                ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse);
+
+                var parentMin2D = ImGui.GetWindowContentRegionMin();
+                var parentMax2D = ImGui.GetWindowContentRegionMax();
+                var size2D = parentMax2D - parentMin2D;
+
+                // Using a Child allow to fill all the space of the window.
+                // It also allows customization
+                ImGui.BeginChild("2DGameRender", size2D, true, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove);
+
+
+                var fuseeViewportMin2D = ImGui.GetWindowContentRegionMin();
+                var fuseeViewportMax2D = ImGui.GetWindowContentRegionMax();
+                var fuseeViewportSize2D = fuseeViewportMax2D - fuseeViewportMin2D;
+                var fuseeViewportPos2D = ImGui.GetWindowPos();
+
+                _sqliteViewerControl.width2d = (int)fuseeViewportSize2D.X;
+                _sqliteViewerControl.height2d = (int)fuseeViewportSize2D.Y;
+
+                _sqliteViewerControl._render2DFrame = true;
+                var hndl2D = _sqliteViewerControl.RenderToTexture((int)fuseeViewportSize2D.X, (int)fuseeViewportSize2D.Y);
+                
+                ImGui.Image(hndl2D, fuseeViewportSize2D,
+                    new Vector2(0, 1),
+                    new Vector2(1, 0));
+
+                // check if mouse is inside window, if true, accept update() inputs
+                //_isMouseInside2DWindow = ImGui.IsItemHovered();
+
+                ImGui.EndChild();
+                
+                ImGui.End();
             }
-
-            // check if mouse is inside window, if true, accept update() inputs
-            _isMouseInsideFuControl = ImGui.IsItemHovered();
-
-            ImGui.EndChild();
-            ImGui.End();
-
             DrawGUI();
             DrawFilePickerDialog();
         }
@@ -676,7 +708,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     ImGui.Begin("Color Picker", ref _3DcolorPickerOpen, ImGuiWindowFlags.AlwaysAutoResize);
                     ImGui.ColorPicker4("Color", ref _3DbgColor);
                     ImGui.End();
-                    _sqliteViewerControl.Camera1BackgroundColor =_3DbgColor.ToFuseeVector();
+                    _sqliteViewerControl.Camera1BackgroundColor = _3DbgColor.ToFuseeVector();
                 }
                 ImGui.EndGroup();
 
@@ -818,6 +850,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     _iniLoaded = true;
                 }
 
+                ImGui.NewLine();
+                ImGui.Text("Ordner mit konvertierten Punktwolken öffnen");
+                if (ImGui.Button("Ordner öffnen"))
+                {
+                    FileManager.OpenFolderWithExplorer(FileManager.GetConvDir());
+                }
                 ImGui.End();
             }
         }
