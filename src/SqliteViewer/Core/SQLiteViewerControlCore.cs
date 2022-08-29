@@ -37,6 +37,8 @@ namespace Fusee.Examples.SQLiteViewer.Core
         private Camera _camera2;
         private Camera _camera3;
 
+        private bool _seperate = false;
+
         private Transform _cameraTransform;
         private Transform _camera2Transform;
         private Transform _camera3Transform;
@@ -66,6 +68,20 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _controls3D = !value;
             }
         }
+
+        public bool SeperateCameras
+        {
+            set
+            {
+                _seperate = !_seperate;
+                if (!_seperate)
+                {
+                    _camera2Transform.Translation = new float3(_camera2Transform.Translation.x, _camera2Transform.Translation.y, _cameraTransform.Translation.z);
+                }
+            }
+            get { return _seperate; }
+        }
+
         private float4 _cameraBackgroundColor = (float4)ColorUint.Black;
         private float4 _camera2BackgroundColor = (float4)ColorUint.Black;
 
@@ -346,12 +362,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
             _guidelinesNearTransform = new Transform
             {
-                Translation = new float3(0, -_camera2Transform.Translation.y, _camera2Transform.Translation.z + _camera2.ClippingPlanes.x),
+                Translation = new float3(0, -5, _camera2Transform.Translation.z + _camera2.ClippingPlanes.x),
             };
 
             _guidelinesFarTransform = new Transform
             {
-                Translation = new float3(0, -_camera2Transform.Translation.y, _camera2Transform.Translation.z + _camera2.ClippingPlanes.y),
+                Translation = new float3(0, -5, _camera2Transform.Translation.z + _camera2.ClippingPlanes.y),
             };
 
             // Shows 2D-Cameras viewing area.
@@ -519,7 +535,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             if (_isPlaying)
             {
                 _cameraTransform.Translate(new float3(0, 0, Time.DeltaTime * _playerspeed));
-                _camera2Transform.Translate(new float3(0, 0, Time.DeltaTime * _playerspeed));
+                if (!_seperate) _camera2Transform.Translate(new float3(0, 0, Time.DeltaTime * _playerspeed));
             }
 
             // 2D camera controls.
@@ -565,7 +581,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _camera2.Scale -= Input.Mouse.WheelVel * Time.DeltaTime * scrollspeed;
 
                 // Set 2D camera zoom/scale restrictions.
-                if (_camera2.Scale < .01f) _camera2.Scale = .01f;
+                if (_camera2.Scale < .001f) _camera2.Scale = .001f;
                 if (_camera2.Scale > 1) _camera2.Scale = 1;
 
             }
@@ -588,7 +604,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
                 // General movement with keyboard.
                 _cameraTransform.FpsView(-_angleHorz, -_angleVert, Input.Keyboard.WSAxis, Input.Keyboard.ADAxis, _playerspeed / 20);
-                _camera2Transform.Translation = new float3(_camera2Transform.Translation.x, _camera2Transform.Translation.y, _cameraTransform.Translation.z);
+                if (!_seperate) _camera2Transform.Translation = new float3(_camera2Transform.Translation.x, _camera2Transform.Translation.y, _cameraTransform.Translation.z);
 
                 // Zoom in.
                 float scrollspeed = .1f;

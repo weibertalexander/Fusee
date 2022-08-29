@@ -6,7 +6,6 @@ using Fusee.Engine.Core.ShaderShards;
 using Fusee.Engine.Imp.Graphics.Desktop;
 using Fusee.ImGuiImp.Desktop;
 using Fusee.ImGuiImp.Desktop.Templates;
-using Fusee.Math.Core;
 using Fusee.PointCloud.Common;
 using ImGuiNET;
 using System.Numerics;
@@ -110,12 +109,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
             SetImGuiDesign();
 
-            if (!String.IsNullOrEmpty(PtRenderingParams.Instance.PathToSqliteFile))
-            {
-                Diagnostics.Warn("true");
-                _sqliteViewerControl = new SQLiteViewerControlCore(RC);
-            }
-
+            // Guideline toggle textures.
             ImageData on = await AssetStorage.GetAsync<ImageData>("on.png");
             _on = new ExposedTexture(on);
             RC.RegisterTexture(_on);
@@ -123,6 +117,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             ImageData off = await AssetStorage.GetAsync<ImageData>("off.png");
             _off = new ExposedTexture(off);
             RC.RegisterTexture(_off);
+
 
             // "Video player" textures.
             ImageData img = await AssetStorage.GetAsync<ImageData>("beginning1.png");
@@ -148,6 +143,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             ImageData img6 = await AssetStorage.GetAsync<ImageData>("end1.png");
             _endingTexture = new ExposedTexture(img6);
             RC.RegisterTexture(_endingTexture);
+
 
             // Scanner button textures.
             ImageData green1 = await AssetStorage.GetAsync<ImageData>("1_g.png");
@@ -248,6 +244,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             return true;
         }
 
+        // Opens file picker, used for picking an SQLite file.
         private void DrawFilePickerDialog()
         {
             _picker.Draw(ref _spawnOpenFilePopup);
@@ -402,6 +399,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             DrawGUI();
             DrawFilePickerDialog();
         }
+
         internal void DrawGUI()
         {
             int s = 32;  // Image size for buttons.
@@ -476,7 +474,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 ImGui.InputFloat("Abspielgeschwindigkeit", ref _playerspeed, 5, 10);
                 if (_playerspeed < 1) _playerspeed = 1;
                 _sqliteViewerControl.Playerspeed = _playerspeed;
-
 
                 ImGui.EndGroup();
 
@@ -601,7 +598,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 ImGui.BeginGroup();
                 ImGui.Text("Farbdarstellung");
 
-                ImGui.Combo("Color mode", ref _currentColorMode, new string[] { "Eigene Farbe", "Intensitätskodiert" }, 2);
+                ImGui.Combo("Farbmodus", ref _currentColorMode, new string[] { "Eigene Farbe", "Intensitätskodiert" }, 2);
                 PtRenderingParams.Instance.ColorMode = _currentColorMode switch
                 {
                     0 => ColorMode.BaseColor,
@@ -839,6 +836,20 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 }
 
                 ImGui.NewLine();
+                ImGui.Text("2D Kamera entkoppeln");
+
+                string buttontext = _sqliteViewerControl.SeperateCameras switch
+                {
+                    true => "Koppeln",
+                    false => "Entkoppeln"
+                };
+
+                if (ImGui.Button(buttontext))
+                {
+                    _sqliteViewerControl.SeperateCameras = !_sqliteViewerControl.SeperateCameras;
+                }
+
+                ImGui.NewLine();
                 ImGui.InputFloat("2D Abschnittsgröße", ref _camera2DRenderDistance, .1f, 10, String.Format("{0:0.#}", _camera2DRenderDistance));
                 if (_camera2DRenderDistance < 0.1f) _camera2DRenderDistance = 0.1f;
                 _sqliteViewerControl.Camera2DRenderDistance = _camera2DRenderDistance;
@@ -849,14 +860,14 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _sqliteViewerControl.Camera3DRenderDistance = _camera3DRenderDistance;
 
                 ImGui.NewLine();
-                if (ImGui.Button("Fensteranordnung laden"))
-                {
-                    ImGui.LoadIniSettingsFromDisk(Path.Combine("Assets/MyImGuiSettings.ini"));
-                }
 
                 if (ImGui.Button("Fensteranordnung speichern"))
                 {
                     ImGui.SaveIniSettingsToDisk(Path.Combine("Assets/MyImGuiSettings.ini"));
+                }
+                if (ImGui.Button("Fensteranordnung laden"))
+                {
+                    ImGui.LoadIniSettingsFromDisk(Path.Combine("Assets/MyImGuiSettings.ini"));
                 }
 
                 // Load previous ini settings on application start.
@@ -876,6 +887,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
         }
 
+        // Draws a progress bar that gives information on how many files are converted.
         private void DrawProgressBar()
         {
             float yPos = 123 - ImGui.GetScrollY();  // 123px because it looks the best on this position.

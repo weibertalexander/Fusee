@@ -163,14 +163,13 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         #endregion Getters
 
+        // Opens the explorer window at given location.
         public static void OpenFolderWithExplorer(string path)
         {
-            string winpath = path.Replace("/", @"\");
-            var prevWorking = Environment.CurrentDirectory;
-            Environment.CurrentDirectory = winpath;
-            string argument =  path + "\"";
+            string winpath = path.Replace("/", @"\");  // Windows paths work with backslash only.
+            string argument =  winpath + "\"";
+
             System.Diagnostics.Process.Start("explorer.exe", argument);
-            Environment.CurrentDirectory = prevWorking;
         }
 
         /*
@@ -273,7 +272,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
             else
             {
-
                 //_sqliteData = new SqliteData();
                 SqliteConnection connection = new("Data Source=" + filename);
                 connection.Open();

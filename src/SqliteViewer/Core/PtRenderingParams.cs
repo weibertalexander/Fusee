@@ -115,7 +115,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
         }
 
-        private float _edlStrength = 0.3f;
+        private float _edlStrength = 0f;
         public float EdlStrength
         {
             get { return _edlStrength; }
