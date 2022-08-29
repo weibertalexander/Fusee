@@ -152,8 +152,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
             string result = next_reader.GetString(0);
             next_reader.Close();
-            Diagnostics.Debug(result);
-            return result;
+            if (File.Exists(_dbdirectory + "/" + result))
+            {
+                Diagnostics.Debug(result);
+                return result;
+            }
+            return "";
         }
 
 
@@ -161,7 +165,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         public static void OpenFolderWithExplorer(string path)
         {
-            System.Diagnostics.Process.Start(path);
+            string winpath = path.Replace("/", @"\");
+            var prevWorking = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = winpath;
+            string argument =  path + "\"";
+            System.Diagnostics.Process.Start("explorer.exe", argument);
+            Environment.CurrentDirectory = prevWorking;
         }
 
         /*

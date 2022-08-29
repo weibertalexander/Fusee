@@ -142,7 +142,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             }
         }
 
-        private int _ptThreshold = 10000000;
+        private int _ptThreshold = 40000000;
 
         public int PointThreshold
         {

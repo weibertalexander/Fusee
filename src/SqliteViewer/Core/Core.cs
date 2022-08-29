@@ -22,11 +22,8 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         private static bool _dockspaceOpen = true;
 
-        private static int _threshold = 1000000;
-        private static float _fuseeViewportMinProj;
-
         private static int _edlNeighbour = 0;
-        private static float _edlStrength = .5f;
+        private static float _edlStrength = 0f;
 
         private static int _currentPtShape;
         private static int _currentPtSizeMethod;
@@ -98,6 +95,9 @@ namespace Fusee.Examples.SQLiteViewer.Core
         private int _convertedFiles = 0;
 
         private bool _iniLoaded = false;
+
+        private float _camera2DRenderDistance = 1f;
+        private int _camera3DRenderDistance = 100;
 
         #endregion
 
@@ -204,8 +204,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
             {
                 if (string.IsNullOrEmpty(file)) return;
 
-                Path.GetFileNameWithoutExtension(file);
-
                 PtRenderingParams.Instance.PathToOocFile = FileManager.ConvertedDirectory + "/" + Path.GetFileNameWithoutExtension(file);
                 PtRenderingParams.Instance.PathToSqliteFile = file;
                 if (_sqliteViewerControl != null)
@@ -233,18 +231,18 @@ namespace Fusee.Examples.SQLiteViewer.Core
         {
             _numberOfFiles = FileManager.GetSqliteFiles().Length;
             Diagnostics.Debug(_currentlyConvertingFile + " " + _numberOfFiles);
-
+            _convertedFiles = 1;
             if (_currentlyConvertingFile != "")
             {
-                for (_convertedFiles = 1; _convertedFiles < _numberOfFiles; _convertedFiles++)
+                for (int i = 0; i < _numberOfFiles; i++)
                 {
-                    if (File.Exists(_currentlyConvertingFile))
+                    Diagnostics.Debug("Converting file no. " + _convertedFiles + " from " + _numberOfFiles);
+                    _currentlyConvertingFile = PtRenderingParams.Instance.PathToOocFile + "/" + FileManager.NextFileFromPath(_currentlyConvertingFile);
+                    if (File.Exists(_currentlyConvertingFile) && await FileManager.CreateOctreeFromDBAsync(_currentlyConvertingFile))
                     {
-                        Diagnostics.Debug("Converting file no. " + _convertedFiles + " from " + _numberOfFiles);
-                        _currentlyConvertingFile = PtRenderingParams.Instance.PathToOocFile + "/" + FileManager.NextFileFromPath(_currentlyConvertingFile);
-                        await FileManager.CreateOctreeFromDBAsync(_currentlyConvertingFile);
-                        Diagnostics.Debug(_convertedFiles + " converted");
+                        _convertedFiles++;
                     }
+                    Diagnostics.Debug(_convertedFiles + " converted");
                 }
             }
             return true;
@@ -259,7 +257,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
         {
             if (_sqliteViewerControl != null)
             {
-                _sqliteViewerControl.Update(true);
+                _sqliteViewerControl.Update(false);
                 if (_sqliteViewerControl.CurrentFootpulse >= _sqliteViewerControl.EndFootpulse)
                 {
                     if (File.Exists(FileManager.GetDBDir() + FileManager.NextFile))
@@ -323,7 +321,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
             ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f); // No corner rounding on the window
             ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0.0f); // No border around the window
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-
             // Create Dockspace
             ImGui.Begin("DockSpace", ref _dockspaceOpen, wndDockspaceFlags);
 
@@ -362,10 +359,11 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     new Vector2(1, 0));
 
                 // check if mouse is inside window, if true, accept update() inputs
-                _isMouseInside3DWindow = ImGui.IsItemHovered();
+                _isMouseInside3DWindow = ImGui.IsWindowFocused();
+                _sqliteViewerControl.Controls3D = _isMouseInside3DWindow;
 
                 ImGui.EndChild();
-                
+
                 ImGui.Begin("2D Viewport",
                 ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse);
 
@@ -388,16 +386,17 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
                 _sqliteViewerControl._render2DFrame = true;
                 var hndl2D = _sqliteViewerControl.RenderToTexture((int)fuseeViewportSize2D.X, (int)fuseeViewportSize2D.Y);
-                
+
                 ImGui.Image(hndl2D, fuseeViewportSize2D,
                     new Vector2(0, 1),
                     new Vector2(1, 0));
 
                 // check if mouse is inside window, if true, accept update() inputs
-                //_isMouseInside2DWindow = ImGui.IsItemHovered();
+                _isMouseInside2DWindow = ImGui.IsWindowFocused();
+                _sqliteViewerControl.Controls2D = _isMouseInside2DWindow;
 
                 ImGui.EndChild();
-                
+
                 ImGui.End();
             }
             DrawGUI();
@@ -486,6 +485,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 ImGui.Text("Scannerkanal ein/ausblenden");
 
                 ImGui.NewLine();
+                // HSPA-Master
                 if (_sqliteViewerControl.Channel1)
                 {
                     int hndlc = ((TextureHandle)_green1.TextureHandle).TexId;
@@ -504,6 +504,45 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 }
 
                 ImGui.SameLine();
+                // HSPB-Master
+                if (_sqliteViewerControl.Channel3)
+                {
+                    int hndlc = ((TextureHandle)_green3.TextureHandle).TexId;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner3();
+                    }
+                }
+                else
+                {
+                    int hndlc = ((TextureHandle)_red3.TextureHandle).TexId;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner3();
+                    }
+                }
+
+                ImGui.SameLine();
+                // HRS1
+                if (_sqliteViewerControl.Channel8)
+                {
+                    int hndlc = ((TextureHandle)_green8.TextureHandle).TexId;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner8();
+                    }
+                }
+                else
+                {
+                    int hndlc = ((TextureHandle)_red8.TextureHandle).TexId;
+                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
+                    {
+                        _sqliteViewerControl.ToggleScanner8();
+                    }
+                }
+
+                ImGui.NewLine();
+                // HSPA-Slave
                 if (_sqliteViewerControl.Channel2)
                 {
                     int hndlc = ((TextureHandle)_green2.TextureHandle).TexId;
@@ -522,24 +561,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 }
 
                 ImGui.SameLine();
-                if (_sqliteViewerControl.Channel3)
-                {
-                    int hndlc = ((TextureHandle)_green3.TextureHandle).TexId;
-                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
-                    {
-                        _sqliteViewerControl.ToggleScanner3();
-                    }
-                }
-                else
-                {
-                    int hndlc = ((TextureHandle)_red3.TextureHandle).TexId;
-                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
-                    {
-                        _sqliteViewerControl.ToggleScanner3();
-                    }
-                }
-
-                ImGui.NewLine();
+                // HSPB-Slave
                 if (_sqliteViewerControl.Channel4)
                 {
                     int hndlc = ((TextureHandle)_green4.TextureHandle).TexId;
@@ -558,24 +580,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 }
 
                 ImGui.SameLine();
-                if (_sqliteViewerControl.Channel8)
-                {
-                    int hndlc = ((TextureHandle)_green8.TextureHandle).TexId;
-                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
-                    {
-                        _sqliteViewerControl.ToggleScanner8();
-                    }
-                }
-                else
-                {
-                    int hndlc = ((TextureHandle)_red8.TextureHandle).TexId;
-                    if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
-                    {
-                        _sqliteViewerControl.ToggleScanner8();
-                    }
-                }
-
-                ImGui.SameLine();
+                // HRS2
                 if (_sqliteViewerControl.Channel9)
                 {
                     int hndlc = ((TextureHandle)_green9.TextureHandle).TexId;
@@ -621,20 +626,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     }
 
                     ImGui.SameLine();
-                    if (ImGui.ColorButton("HSPA Slave", _scn2Color, ImGuiColorEditFlags.DefaultOptions, Vector2.One * 50))
-                    {
-                        _cloud2ColorPickerOpen = !_cloud2ColorPickerOpen;
-                    }
-
-                    if (_cloud2ColorPickerOpen)
-                    {
-                        ImGui.Begin("HSPA Master", ref _cloud2ColorPickerOpen, ImGuiWindowFlags.AlwaysAutoResize);
-                        ImGui.ColorPicker4("Farbe", ref _scn2Color);
-                        ImGui.End();
-                        _sqliteViewerControl.SetColorPassEfColor(1, _scn2Color.ToFuseeVector());
-                    }
-
-                    ImGui.SameLine();
                     if (ImGui.ColorButton("HSPB Master", _scn3Color, ImGuiColorEditFlags.DefaultOptions, Vector2.One * 50))
                     {
                         _cloud3ColorPickerOpen = !_cloud3ColorPickerOpen;
@@ -646,20 +637,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
                         ImGui.ColorPicker4("Farbe", ref _scn3Color);
                         ImGui.End();
                         _sqliteViewerControl.SetColorPassEfColor(2, _scn3Color.ToFuseeVector());
-                    }
-
-                    ImGui.NewLine();
-                    if (ImGui.ColorButton("HSPB Slave", _scn4Color, ImGuiColorEditFlags.DefaultOptions, Vector2.One * 50))
-                    {
-                        _cloud4ColorPickerOpen = !_cloud4ColorPickerOpen;
-                    }
-
-                    if (_cloud4ColorPickerOpen)
-                    {
-                        ImGui.Begin("HSPA Master", ref _cloud4ColorPickerOpen, ImGuiWindowFlags.AlwaysAutoResize);
-                        ImGui.ColorPicker4("Farbe", ref _scn4Color);
-                        ImGui.End();
-                        _sqliteViewerControl.SetColorPassEfColor(3, _scn4Color.ToFuseeVector());
                     }
 
                     ImGui.SameLine();
@@ -675,6 +652,35 @@ namespace Fusee.Examples.SQLiteViewer.Core
                         ImGui.End();
                         _sqliteViewerControl.SetColorPassEfColor(4, _scn8Color.ToFuseeVector());
                     }
+
+                    ImGui.NewLine();
+                    if (ImGui.ColorButton("HSPA Slave", _scn2Color, ImGuiColorEditFlags.DefaultOptions, Vector2.One * 50))
+                    {
+                        _cloud2ColorPickerOpen = !_cloud2ColorPickerOpen;
+                    }
+
+                    if (_cloud2ColorPickerOpen)
+                    {
+                        ImGui.Begin("HSPA Master", ref _cloud2ColorPickerOpen, ImGuiWindowFlags.AlwaysAutoResize);
+                        ImGui.ColorPicker4("Farbe", ref _scn2Color);
+                        ImGui.End();
+                        _sqliteViewerControl.SetColorPassEfColor(1, _scn2Color.ToFuseeVector());
+                    }
+
+                    ImGui.SameLine();
+                    if (ImGui.ColorButton("HSPB Slave", _scn4Color, ImGuiColorEditFlags.DefaultOptions, Vector2.One * 50))
+                    {
+                        _cloud4ColorPickerOpen = !_cloud4ColorPickerOpen;
+                    }
+
+                    if (_cloud4ColorPickerOpen)
+                    {
+                        ImGui.Begin("HSPA Master", ref _cloud4ColorPickerOpen, ImGuiWindowFlags.AlwaysAutoResize);
+                        ImGui.ColorPicker4("Farbe", ref _scn4Color);
+                        ImGui.End();
+                        _sqliteViewerControl.SetColorPassEfColor(3, _scn4Color.ToFuseeVector());
+                    }
+
 
                     ImGui.SameLine();
                     if (ImGui.ColorButton("HRS2", _scn9Color, ImGuiColorEditFlags.DefaultOptions, Vector2.One * 50))
@@ -814,7 +820,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 ImGui.EndGroup();
                 ImGui.NewLine();
 
-                ImGui.Text("Toggle 2D Camera guides");
+                ImGui.Text("Hilfslinien für 2D Sichtbereich umschalten");
                 if (_sqliteViewerControl.GuideLinesOn)
                 {
                     int onhndl = ((TextureHandle)_on.TextureHandle).TexId;
@@ -831,6 +837,16 @@ namespace Fusee.Examples.SQLiteViewer.Core
                         _sqliteViewerControl.ToggleGuidelines();
                     }
                 }
+
+                ImGui.NewLine();
+                ImGui.InputFloat("2D Abschnittsgröße", ref _camera2DRenderDistance, .1f, 10, String.Format("{0:0.#}", _camera2DRenderDistance));
+                if (_camera2DRenderDistance < 0.1f) _camera2DRenderDistance = 0.1f;
+                _sqliteViewerControl.Camera2DRenderDistance = _camera2DRenderDistance;
+
+                ImGui.NewLine();
+                ImGui.InputInt("3D Sichtweite", ref _camera3DRenderDistance, 1, 10);
+                if (_camera3DRenderDistance < 10) _camera3DRenderDistance = 10;
+                _sqliteViewerControl.Camera3DRenderDistance = _camera3DRenderDistance;
 
                 ImGui.NewLine();
                 if (ImGui.Button("Fensteranordnung laden"))

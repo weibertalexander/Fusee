@@ -46,8 +46,55 @@ namespace Fusee.Examples.SQLiteViewer.Core
         private SceneNode _coordinateAxes;
         private Transform _coordinateAxesTransform;
 
+        private bool _controls3D = false;
+        private bool _controls2D = false;
+
+        public bool Controls3D
+        {
+            set
+            {
+                _controls3D = value;
+                _controls2D = !value;
+            }
+        }
+
+        public bool Controls2D
+        {
+            set
+            {
+                _controls2D = value;
+                _controls3D = !value;
+            }
+        }
         private float4 _cameraBackgroundColor = (float4)ColorUint.Black;
         private float4 _camera2BackgroundColor = (float4)ColorUint.Black;
+
+        private int _cameraRenderDistance = 100;
+
+        private int _camera2RenderStart = 1;
+        private float _camera2RenderDistance = 1f;
+
+        public float Camera2DRenderDistance
+        {
+            set
+            {
+                _camera2RenderDistance = value;
+
+                _camera2.ClippingPlanes.y = _camera2RenderStart + value;
+
+                _guidelinesNearTransform.Translation = new float3(0, _guidelinesNearTransform.Translation.y, _camera2.ClippingPlanes.x);
+
+                _guidelinesFarTransform.Translation = new float3(0, _guidelinesFarTransform.Translation.y, _camera2.ClippingPlanes.y);
+            }
+        }
+        public int Camera3DRenderDistance
+        {
+            set
+            {
+                _cameraRenderDistance = value;
+                _camera.ClippingPlanes.y = _cameraRenderDistance;
+            }
+        }
 
         public float4 Camera1BackgroundColor
         {
@@ -68,6 +115,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _camera2.BackgroundColor = value;
             }
         }
+
 
         // Pointcloud related.
         private Potree2Reader[] _readerList;
@@ -108,6 +156,8 @@ namespace Fusee.Examples.SQLiteViewer.Core
         }
 
         private SceneNode _guidelines;
+        private Transform _guidelinesNearTransform;
+        private Transform _guidelinesFarTransform;
 
         private bool _isMouseDown = false;
         private float2 _lastClickedMousePos;
@@ -227,14 +277,14 @@ namespace Fusee.Examples.SQLiteViewer.Core
             _initialCamTransform = new float3(0, 5, 0);
 
             // 3D camera.
-            _camera = new Camera(ProjectionMethod.Perspective, 0.1f, 50, M.PiOver4, RenderLayers.Layer01)
+            _camera = new Camera(ProjectionMethod.Perspective, 0.1f, _cameraRenderDistance, M.PiOver4, RenderLayers.Layer01)
             {
                 Layer = 1,
                 BackgroundColor = _cameraBackgroundColor,
             };
 
             // 2D camera.
-            _camera2 = new Camera(ProjectionMethod.Orthographic, 1f, 2f, M.PiOver4, RenderLayers.Layer01)
+            _camera2 = new Camera(ProjectionMethod.Orthographic, _camera2RenderStart, _camera2RenderStart + _camera2RenderDistance, M.PiOver4, RenderLayers.Layer01)
             {
                 Layer = 1,
                 BackgroundColor = _cameraBackgroundColor,
@@ -261,7 +311,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
             _camera3Transform = new Transform
             {
-                Translation = new float3(0, 0, -6),
+                Translation = new float3(1, 0, -6),
             };
 
             SceneNode cam = new SceneNode
@@ -294,6 +344,16 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 }
             };
 
+            _guidelinesNearTransform = new Transform
+            {
+                Translation = new float3(0, -_camera2Transform.Translation.y, _camera2Transform.Translation.z + _camera2.ClippingPlanes.x),
+            };
+
+            _guidelinesFarTransform = new Transform
+            {
+                Translation = new float3(0, -_camera2Transform.Translation.y, _camera2Transform.Translation.z + _camera2.ClippingPlanes.y),
+            };
+
             // Shows 2D-Cameras viewing area.
             _guidelines = new SceneNode
             {
@@ -308,29 +368,22 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     {
                         Components =
                         {
-                            new Transform
-                            {
-                                Translation = new float3(0, -_camera2Transform.Translation.y, _camera2.ClippingPlanes.x),
-                            },
-                            MakeEffect.FromUnlit((float4)ColorUint.White),
-                            SimpleMeshes.CreateCuboid(new float3(100, 0.01f, 0.01f)),
+                            _guidelinesNearTransform,
+                            MakeEffect.FromUnlit(new float4(0, 0, 255, 0.14f)),
+                            SimpleMeshes.CreateCuboid(new float3(100, 0.02f, 0.02f)),
                         },
                     },
                     new SceneNode
                     {
                         Components =
                         {
-                            new Transform
-                            {
-                                Translation = new float3(0, -_camera2Transform.Translation.y, _camera2.ClippingPlanes.y),
-                            },
-                            MakeEffect.FromUnlit((float4)ColorUint.White),
-                            SimpleMeshes.CreateCuboid(new float3(100, 0.01f, 0.01f)),
+                            _guidelinesFarTransform,
+                            MakeEffect.FromUnlit(new float4(255, 0, 0, 0.14f)),
+                            SimpleMeshes.CreateCuboid(new float3(100, 0.02f, 0.02f)),
                         }
                     }
                 }
             };
-
             cam2.Children.Add(_guidelines);
             /*
             // Set viewports: 2D camera is on top of 3D cameras viewport, axes camera is on the right side of 2D cameras viewport.
@@ -340,7 +393,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             */
             _camera.Viewport = new float4(0, 0, 100, 100);
             _camera2.Viewport = new float4(0, 0, 100, 100);
-            _camera3.Viewport = new float4(0, 0, 100, 10);
+            _camera3.Viewport = new float4(0, 0, 50, 20);
 
 
             _scene.Children.Add(cam);
@@ -445,48 +498,23 @@ namespace Fusee.Examples.SQLiteViewer.Core
             else
             {
 
-                PtRenderingParams.Instance.DepthPassEf.Active = true;
-
-                // Turn off every color pass
-                foreach (var ef in _colorPassEfs)
-                {
-                    ef.Active = false;
-                }
-
-                // render depth tex only (from each color pass)
-                foreach (var ef in _colorPassEfs)
-                {
-                    //_camera.RenderTexture = ef.DepthTex;
-                    _camera.RenderTexture = RenderTexture3D;
-                    _sceneRenderer.Render(_rc);
-                }
-
-                PtRenderingParams.Instance.DepthPassEf.Active = false;
-
-                foreach (var ef in _colorPassEfs)
-                {
-                    ef.Active = true;
-                    //_sceneRenderer.Render(_rc);
-                }
-
-
-                _camera.RenderTexture = RenderTexture3D;
-                //_camera2.RenderTexture = RenderTexture2D;
-                //_camera3.RenderTexture = RenderTexture2D;
-
-                _sceneRenderer.Render(_rc);
-
-                ReadyToLoadNewFile = true;
-
-                return RenderTexture3D?.TextureHandle;
             }
+            //_camera.RenderTexture = null;
+            _camera.RenderTexture = RenderTexture3D;
+            //_camera2.RenderTexture = RenderTexture2D;
+            //_camera3.RenderTexture = RenderTexture2D;
+
+            _sceneRenderer.Render(_rc);
+
+            ReadyToLoadNewFile = true;
+
+            return RenderTexture3D?.TextureHandle;
+
 
         }
 
         public override void Update(bool allowInput)
         {
-            //SetPointcloud();
-
             // Play button is active.
             if (_isPlaying)
             {
@@ -494,55 +522,33 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 _camera2Transform.Translate(new float3(0, 0, Time.DeltaTime * _playerspeed));
             }
 
-            // Controls with left mouse button.
-            if (Input.Mouse.LeftButton)
+            // 2D camera controls.
+            if (_controls2D)
             {
-                // Store mouse position when clicked.
-                if (!_isMouseDown)
+                // Controls with left mouse button.
+                if (Input.Mouse.LeftButton)
                 {
-                    _lastClickedMousePos = Input.Mouse.Position;
-                    _isMouseDown = true;
-                }
-                /*
-                // Mouse is over 2D camera.
-                if (_lastClickedMousePos.y <= (_height / 100 * (100 - _mainCamViewportSize + 10)))  // + 10 arbitrary, dunno what the actual imgui viewport size is
-                {
-                    if (allowInput)
+                    // Store mouse position when clicked.
+                    if (!_isMouseDown)
                     {
-                        _camera2Transform.Translate(new float3(-Input.Mouse.Velocity.x * Time.DeltaTime * _camera2MouseSensitivity, Input.Mouse.Velocity.y * Time.DeltaTime * _camera2MouseSensitivity, 0));
+                        _lastClickedMousePos = Input.Mouse.Position;
+                        _isMouseDown = true;
                     }
+                    _camera2Transform.Translate(new float3(-Input.Mouse.Velocity.x * Time.DeltaTime * _camera2MouseSensitivity, Input.Mouse.Velocity.y * Time.DeltaTime * _camera2MouseSensitivity, 0));
                 }
-                */
-                // Mouse is over 3D camera.
+
+                // Mouse is released so if it is clicked and held again the initial mouse position can be stored.
                 else
                 {
-                    _angleVelHorz = -RotationSpeed * Input.Mouse.XVel * Time.DeltaTime * 0.0005f;
-                    _angleVelVert = -RotationSpeed * Input.Mouse.YVel * Time.DeltaTime * 0.0005f;
-
-                    if (allowInput)
-                    {
-                        _angleHorz += _angleVelHorz;
-                        _angleVert += _angleVelVert;
-                    }
-                    _cameraTransform.FpsView(-_angleHorz, -_angleVert, 0, 0, _playerspeed / 10);
+                    _isMouseDown = false;
                 }
-            }
-            // Mouse is released so if it is clicked and held again the initial mouse position can be stored.
-            else
-            {
-                _isMouseDown = false;
-            }
 
-
-            // Zoom and controls with right mouse button over 2D camera.
-            if (false)
-            {
                 // 2D Rotation with right mouse button.
-                if (Input.Mouse.RightButton && allowInput)
+                if (Input.Mouse.RightButton)
                 {
                     _camera2Transform.Rotate(new float3(0, Input.Mouse.Velocity.x * Time.DeltaTime * _camera2MouseSensitivity * 0.2f, 0));
 
-                    // Clamp camera angle.
+                    // Clamp camera angle at  mod90 degree angles.
                     if ((_camera2Transform.Rotation.y % M.PiOver2) > -0.05f && (_camera2Transform.Rotation.y % M.PiOver2) < 0.05)
                     {
                         float rounded = (float)System.Math.Round(_camera2Transform.Rotation.y / M.PiOver2) * M.PiOver2;
@@ -562,30 +568,37 @@ namespace Fusee.Examples.SQLiteViewer.Core
                 if (_camera2.Scale < .01f) _camera2.Scale = .01f;
                 if (_camera2.Scale > 1) _camera2.Scale = 1;
 
-
             }
 
-            // Zoom over 3D camera.
-            else
+            // 3D camera controls.
+            if (_controls3D)
             {
-                if (allowInput)
+                // Camera rotation with left mouse button.
+                if (Input.Mouse.LeftButton)
                 {
-                    // Zoom in.
-                    float scrollspeed = .1f;
-                    _zoom -= Input.Mouse.WheelVel * Time.DeltaTime * scrollspeed;
 
-                    // Set zoom restrictions
-                    if (_zoom < .1f) _zoom = .1f;
-                    if (_zoom > 1) _zoom = 1;
+                    _angleVelHorz = -RotationSpeed * Input.Mouse.XVel * Time.DeltaTime * 0.0005f;
+                    _angleVelVert = -RotationSpeed * Input.Mouse.YVel * Time.DeltaTime * 0.0005f;
 
-                    _camera.Fov = _zoom;
+                    _angleHorz += _angleVelHorz;
+                    _angleVert += _angleVelVert;
+
+                    _cameraTransform.FpsView(-_angleHorz, -_angleVert, 0, 0, 0);
                 }
-            }
 
-            if (allowInput)
-            {
+                // General movement with keyboard.
                 _cameraTransform.FpsView(-_angleHorz, -_angleVert, Input.Keyboard.WSAxis, Input.Keyboard.ADAxis, _playerspeed / 20);
-                _camera2Transform.Translation = new float3(_camera2Transform.Translation.x, _camera2Transform.Translation.y, _cameraTransform.Translation.z - _camera2.ClippingPlanes.y / 2);
+                _camera2Transform.Translation = new float3(_camera2Transform.Translation.x, _camera2Transform.Translation.y, _cameraTransform.Translation.z);
+
+                // Zoom in.
+                float scrollspeed = .1f;
+                _zoom -= Input.Mouse.WheelVel * Time.DeltaTime * scrollspeed;
+
+                // Set zoom restrictions
+                if (_zoom < .1f) _zoom = .1f;
+                if (_zoom > 1) _zoom = 1;
+
+                _camera.Fov = _zoom;
             }
         }
 
@@ -630,7 +643,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
             foreach (var ef in _colorPassEfs)
             {
                 ef.DepthTex?.Dispose();
-                ef.DepthTex = WritableTexture.CreateDepthTex((int)(_width), (int)(_height), new ImagePixelFormat(ColorFormat.Depth24));
+                ef.DepthTex = WritableTexture.CreateDepthTex((int)(width), (int)(height), new ImagePixelFormat(ColorFormat.Depth24));
             }
             _camera.RenderTexture = RenderTexture3D;
             _camera2.RenderTexture = RenderTexture2D;
@@ -738,5 +751,4 @@ namespace Fusee.Examples.SQLiteViewer.Core
             GC.SuppressFinalize(this);
         }
     }
-
 }
