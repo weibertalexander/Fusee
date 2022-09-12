@@ -64,6 +64,7 @@ namespace Fusee.PointCloud.Potree.V2
 
         public double3 GetPointCloudOffset()
         {
+            
             return _instance.Metadata.Offset;
         }
 

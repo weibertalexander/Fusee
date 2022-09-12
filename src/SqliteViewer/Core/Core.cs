@@ -21,9 +21,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
         private static bool _dockspaceOpen = true;
 
-        private static int _edlNeighbour = 0;
-        private static float _edlStrength = 0f;
-
         private static int _currentPtShape;
         private static int _currentPtSizeMethod;
         private static int _ptSize = 1;
@@ -267,6 +264,16 @@ namespace Fusee.Examples.SQLiteViewer.Core
                         _sqliteViewerControl = new SQLiteViewerControlCore(RC);
                         _sqliteViewerControl.UpdateOriginalGameWindowDimensions(Width, Height);
 
+                        _sqliteViewerControl.SetColorPassEfColor(0, _scn1Color.ToFuseeVector());
+                        _sqliteViewerControl.SetColorPassEfColor(1, _scn2Color.ToFuseeVector());
+                        _sqliteViewerControl.SetColorPassEfColor(2, _scn3Color.ToFuseeVector());
+                        _sqliteViewerControl.SetColorPassEfColor(3, _scn4Color.ToFuseeVector());
+                        _sqliteViewerControl.SetColorPassEfColor(4, _scn8Color.ToFuseeVector());
+                        _sqliteViewerControl.SetColorPassEfColor(5, _scn9Color.ToFuseeVector());
+
+                        _sqliteViewerControl.Camera1BackgroundColor = _3DbgColor.ToFuseeVector();
+                        _sqliteViewerControl.Camera2BackgroundColor = _2DbgColor.ToFuseeVector();
+
                     }
                     else
                     {
@@ -483,12 +490,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
                 ImGui.NewLine();
                 // HSPA-Master
-                if (_sqliteViewerControl.Channel1)
+                if (_sqliteViewerControl.Channel0Visible)
                 {
                     int hndlc = ((TextureHandle)_green1.TextureHandle).TexId;
                     if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
                     {
-                        _sqliteViewerControl.ToggleScanner1();
+                        _sqliteViewerControl.ToggleScanner0();
                     }
                 }
                 else
@@ -496,18 +503,18 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     int hndlc = ((TextureHandle)_red1.TextureHandle).TexId;
                     if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
                     {
-                        _sqliteViewerControl.ToggleScanner1();
+                        _sqliteViewerControl.ToggleScanner0();
                     }
                 }
 
                 ImGui.SameLine();
                 // HSPB-Master
-                if (_sqliteViewerControl.Channel3)
+                if (_sqliteViewerControl.Channel2Visible)
                 {
                     int hndlc = ((TextureHandle)_green3.TextureHandle).TexId;
                     if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
                     {
-                        _sqliteViewerControl.ToggleScanner3();
+                        _sqliteViewerControl.ToggleScanner2();
                     }
                 }
                 else
@@ -515,13 +522,13 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     int hndlc = ((TextureHandle)_red3.TextureHandle).TexId;
                     if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
                     {
-                        _sqliteViewerControl.ToggleScanner3();
+                        _sqliteViewerControl.ToggleScanner2();
                     }
                 }
 
                 ImGui.SameLine();
                 // HRS1
-                if (_sqliteViewerControl.Channel8)
+                if (_sqliteViewerControl.Channel8Visible)
                 {
                     int hndlc = ((TextureHandle)_green8.TextureHandle).TexId;
                     if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
@@ -540,12 +547,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
                 ImGui.NewLine();
                 // HSPA-Slave
-                if (_sqliteViewerControl.Channel2)
+                if (_sqliteViewerControl.Channel1Visible)
                 {
                     int hndlc = ((TextureHandle)_green2.TextureHandle).TexId;
                     if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
                     {
-                        _sqliteViewerControl.ToggleScanner2();
+                        _sqliteViewerControl.ToggleScanner1();
                     }
                 }
                 else
@@ -553,18 +560,18 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     int hndlc = ((TextureHandle)_red2.TextureHandle).TexId;
                     if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
                     {
-                        _sqliteViewerControl.ToggleScanner2();
+                        _sqliteViewerControl.ToggleScanner1();
                     }
                 }
 
                 ImGui.SameLine();
                 // HSPB-Slave
-                if (_sqliteViewerControl.Channel4)
+                if (_sqliteViewerControl.Channel3Visible)
                 {
                     int hndlc = ((TextureHandle)_green4.TextureHandle).TexId;
                     if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
                     {
-                        _sqliteViewerControl.ToggleScanner4();
+                        _sqliteViewerControl.ToggleScanner3();
                     }
                 }
                 else
@@ -572,13 +579,13 @@ namespace Fusee.Examples.SQLiteViewer.Core
                     int hndlc = ((TextureHandle)_red4.TextureHandle).TexId;
                     if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
                     {
-                        _sqliteViewerControl.ToggleScanner4();
+                        _sqliteViewerControl.ToggleScanner3();
                     }
                 }
 
                 ImGui.SameLine();
                 // HRS2
-                if (_sqliteViewerControl.Channel9)
+                if (_sqliteViewerControl.Channel9Visible)
                 {
                     int hndlc = ((TextureHandle)_green9.TextureHandle).TexId;
                     if (ImGui.ImageButton(new IntPtr(hndlc), new Vector2(c, c)))
@@ -769,7 +776,6 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
                 ImGui.NewLine();
                 ImGui.Spacing();
-                */
 
                 ImGui.BeginGroup();
                 ImGui.Text("Lighting");
@@ -783,6 +789,7 @@ namespace Fusee.Examples.SQLiteViewer.Core
 
                 ImGui.NewLine();
                 ImGui.Spacing();
+                */
                 ImGui.BeginGroup();
                 ImGui.Text("Point Shape");
                 ImGui.Combo("PointShape", ref _currentPtShape, new string[] { "Paraboloid", "Rect", "Circle" }, 3);
@@ -933,12 +940,12 @@ namespace Fusee.Examples.SQLiteViewer.Core
             var colors = style.Colors;
 
             style.WindowRounding = 0.0f;             // Radius of window corners rounding. Set to 0.0f to have rectangular windows
-            style.ScrollbarRounding = 3.0f;             // Radius of grab corners rounding for scrollbar
-            style.GrabRounding = 2.0f;             // Radius of grabs corners rounding. Set to 0.0f to have rectangular slider grabs.
+            style.ScrollbarRounding = 0.0f;             // Radius of grab corners rounding for scrollbar
+            style.GrabRounding = 0.0f;             // Radius of grabs corners rounding. Set to 0.0f to have rectangular slider grabs.
             style.AntiAliasedLines = true;
             style.AntiAliasedFill = true;
-            style.WindowRounding = 2;
-            style.ChildRounding = 2;
+            style.WindowRounding = 0;
+            style.ChildRounding = 0;
             style.ScrollbarSize = 16;
             style.ScrollbarRounding = 3;
             style.GrabRounding = 2;

@@ -117,7 +117,7 @@ namespace Fusee.Examples.PointCloudPotree2.Core
                     new Transform()
                     {
                         Scale = float3.One,
-                        Translation = float3.Zero,
+                        Translation = new float3(20, 0, 0),
                         Rotation = float3.Zero
                     },
                     PtRenderingParams.Instance.DepthPassEf,
@@ -125,6 +125,7 @@ namespace Fusee.Examples.PointCloudPotree2.Core
                     _pointCloud
                 }
             };
+            //Fusee.Base.Core.Diagnostics.Debug(_pointCloud.Center);
 
             _camTransform.Translation = _initCameraPos = _pointCloud.Center - new float3(_pointCloud.Size.x / 2, _pointCloud.Size.y/2, _pointCloud.Size.z / 2);
 

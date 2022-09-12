@@ -80,7 +80,7 @@ namespace Fusee.Examples.PointCloudPotree2.Gui
                 {
                     Name = "MainCamTransform",
                     Scale = float3.One,
-                    Translation = float3.Zero,
+                    Translation = new float3(5, 0, 0),
                     Rotation = float3.Zero
                 };
 
@@ -112,7 +112,7 @@ namespace Fusee.Examples.PointCloudPotree2.Gui
                     new Transform()
                     {
                         Scale = float3.One,
-                        Translation = float3.Zero,
+                        Translation = new float3(5, 0, 0),
                         Rotation = float3.Zero
                     },
                     PointRenderingParams.Instance.DepthPassEf,
@@ -236,7 +236,6 @@ namespace Fusee.Examples.PointCloudPotree2.Gui
         // Is called when the window was resized
         protected override void Resize(int width, int height)
         {
-            Diagnostics.Warn("Resize called: " + width + "  " + height);
             if (width <= 0 || height <= 0)
                 return;
 

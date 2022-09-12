@@ -72,7 +72,7 @@ namespace Fusee.ImGuiImp.Desktop.Templates
         /// <summary>
         /// Text color of folder
         /// </summary>
-        public Vector4 FolderColor = new(255, 0, 255, 255);
+        public Vector4 FolderColor = new(0, 0, 0, 255);
 
         /// <summary>
         /// Background color of pop up window
