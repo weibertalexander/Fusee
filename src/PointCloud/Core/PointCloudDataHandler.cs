@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Fusee.PointCloud.Core
@@ -105,14 +106,19 @@ namespace Fusee.PointCloud.Core
 
         private readonly bool _doRenderInstanced;
 
-        private readonly ConcurrentDictionary<OctantId, OctantId> _loadingPointsTriggeredFor = new();
-        private readonly ConcurrentDictionary<OctantId, OctantId> _creatingMeshesTriggeredFor = new();
+        private readonly ConcurrentStack<OctantId> _loadingPointsTriggeredFor = new();
+        private readonly ConcurrentQueue<OctantId> _creatingMeshesTriggeredFor = new();
 
         private readonly ConcurrentQueue<IEnumerable<TGpuData>> _disposeQueue = new();
         private const int _maxNumberOfDisposals = 10;
         private float _deltaTimeSinceLastDisposal = 0.0f;
 
         private bool _disposed;
+
+        private readonly Task _pointLoadingTask;
+        private readonly Task _meshCreationTask;
+        private readonly CancellationTokenSource _ctsLoad = new();
+        private readonly CancellationTokenSource _ctsCreate = new();
 
         /// <summary>
         /// Creates a new instance.
@@ -163,6 +169,59 @@ namespace Fusee.PointCloud.Core
                     _updateFromInvalidateCache = _visPtCache.GetKeys.ToHashSet();
                 }
             };
+
+            _pointLoadingTask = Task.Run(() =>
+            {
+                while (!_ctsLoad.IsCancellationRequested)
+                {
+                    if (_loadingPointsTriggeredFor.IsEmpty) continue;
+                    _loadingPointsTriggeredFor.TryPop(out var guid);
+                    try
+                    {
+                        if (!_rawPointCache.TryGetValue(guid, out var pointsMmf))
+                        {
+                            pointsMmf = _loadPointsHandler.Invoke(guid);
+                            _rawPointCache.AddOrUpdate(guid, pointsMmf);
+                        }
+
+                        CreateVisPointCacheEntry(pointsMmf, guid);
+
+                    }
+                    catch (Exception e)
+                    {
+                        // if an exception happened during loading process call the error event for further handling of the situation
+                        OnLoadingErrorEvent?.Invoke(this, new ErrorEventArgs(e));
+                    }
+                }
+
+
+            });
+
+            _meshCreationTask = Task.Run(() =>
+            {
+                while (!_ctsLoad.IsCancellationRequested)
+                {
+                    if (_creatingMeshesTriggeredFor.IsEmpty) continue;
+                    _creatingMeshesTriggeredFor.TryDequeue(out var octantId);
+
+                    if (!_visPtCache.TryGetValue(octantId, out var points)) continue;
+
+                    IEnumerable<TGpuData> gpuData;
+                    int numberOfPointsInNode = (int)_getNumberOfPointsInNode(octantId);
+                    if (!_doRenderInstanced)
+                        gpuData = MeshMaker.CreateMeshes(points, CreateGpuDataHandler);
+                    else
+                        gpuData = MeshMaker.CreateInstanceData(points, CreateGpuDataHandler);
+
+                    foreach (var mesh in gpuData)
+                    {
+                        NewMeshAction?.Invoke(mesh);
+                    }
+
+                    _gpuDataCache.AddOrUpdate(octantId, gpuData);
+                }
+
+            });
         }
 
         private HashSet<OctantId> _queuedForUpdate = new HashSet<OctantId>();
@@ -228,16 +287,18 @@ namespace Fusee.PointCloud.Core
             {
                 _deltaTimeSinceLastDisposal = 0;
 
-                if (_disposeQueue.Count > 0)
+                if (!_disposeQueue.IsEmpty)
                 {
                     var nodesInQueue = _disposeQueue.Count;
                     var count = nodesInQueue < _maxNumberOfDisposals ? nodesInQueue : _maxNumberOfDisposals;
 
                     for (int i = 0; i < count; i++)
                     {
-                        _disposeQueue.TryDequeue(out var gpuData);
-                        foreach (var data in gpuData)
-                            data.Dispose();
+                        if (_disposeQueue.TryDequeue(out var gpuData))
+                        {
+                            foreach (var data in gpuData)
+                                data.Dispose();
+                        }
                     }
                 }
 
@@ -261,28 +322,8 @@ namespace Fusee.PointCloud.Core
 
         private void TriggerMeshCreation(OctantId octantId)
         {
-            Guard.IsNotNull(CreateGpuDataHandler);
-
-            if (!_visPtCache.TryGetValue(octantId, out var points)) return;
-            if (_creatingMeshesTriggeredFor.ContainsKey(octantId)) return;
-
-            _creatingMeshesTriggeredFor.TryAdd(octantId, octantId);
-
-            IEnumerable<TGpuData> gpuData;
-
-            int numberOfPointsInNode = (int)_getNumberOfPointsInNode(octantId);
-            if (!_doRenderInstanced)
-                gpuData = MeshMaker.CreateMeshes(points, CreateGpuDataHandler);
-            else
-                gpuData = MeshMaker.CreateInstanceData(points, CreateGpuDataHandler);
-
-            foreach (var mesh in gpuData)
-            {
-                NewMeshAction?.Invoke(mesh);
-            }
-
-            _gpuDataCache.AddOrUpdate(octantId, gpuData);
-            _creatingMeshesTriggeredFor.TryRemove(octantId, out var _);
+            if (_creatingMeshesTriggeredFor.Contains(octantId)) return;
+            _creatingMeshesTriggeredFor.Enqueue(octantId);
         }
 
         /// <summary>
@@ -291,29 +332,10 @@ namespace Fusee.PointCloud.Core
         /// <param name="guid">The octant for which the points should be loaded.</param>
         public override void TriggerPointLoading(OctantId guid)
         {
-            if (_loadingPointsTriggeredFor.ContainsKey(guid))
+            if (_loadingPointsTriggeredFor.Contains(guid))
                 return;
-
-            _loadingPointsTriggeredFor.TryAdd(guid, guid);
-            _ = Task.Run(() =>
-            {
-                if (!_rawPointCache.TryGetValue(guid, out var pointsMmf))
-                {
-                    pointsMmf = _loadPointsHandler.Invoke(guid);
-                    _rawPointCache.AddOrUpdate(guid, pointsMmf);
-                }
-
-                CreateVisPointCacheEntry(pointsMmf, guid);
-                _loadingPointsTriggeredFor.TryRemove(guid, out var _);
-
-            }).ContinueWith((finishedTask) =>
-            {
-                // if an exception happened during loading process call the error event for further handling of the situation
-                if (finishedTask.Exception != null)
-                {
-                    OnLoadingErrorEvent?.Invoke(this, new ErrorEventArgs(finishedTask.Exception));
-                }
-            });
+            if(_loadingPointsTriggeredFor.Count < 200)
+                _loadingPointsTriggeredFor.Push(guid);
         }
 
         private void CreateVisPointCacheEntry(MemoryMappedFile pointsMmf, OctantId guid)
@@ -394,7 +416,7 @@ namespace Fusee.PointCloud.Core
         /// other objects. Only unmanaged resources can be disposed.
         ///</summary>
         /// <param name="disposing"></param>
-        protected override void Dispose(bool disposing)
+        protected override async void Dispose(bool disposing)
         {
             // Check to see if Dispose has already been called.
             if (!_disposed)
@@ -420,6 +442,11 @@ namespace Fusee.PointCloud.Core
                         gpuData.Dispose();
                     }
                 }
+
+                _ctsCreate.Cancel();
+                _ctsLoad.Cancel();
+                await _pointLoadingTask;
+                await _meshCreationTask;
 
                 // Note disposing has been done.
                 _disposed = true;
