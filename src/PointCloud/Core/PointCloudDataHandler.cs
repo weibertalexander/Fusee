@@ -106,7 +106,7 @@ namespace Fusee.PointCloud.Core
 
         private readonly bool _doRenderInstanced;
 
-        private readonly ConcurrentStack<OctantId> _loadingPointsTriggeredFor = new();
+        private readonly ConcurrentQueue<OctantId> _loadingPointsTriggeredFor = new();
         private readonly ConcurrentQueue<OctantId> _creatingMeshesTriggeredFor = new();
 
         private readonly ConcurrentQueue<IEnumerable<TGpuData>> _disposeQueue = new();
@@ -175,7 +175,7 @@ namespace Fusee.PointCloud.Core
                 while (!_ctsLoad.IsCancellationRequested)
                 {
                     if (_loadingPointsTriggeredFor.IsEmpty) continue;
-                    _loadingPointsTriggeredFor.TryPop(out var guid);
+                    _loadingPointsTriggeredFor.TryDequeue(out var guid);
                     try
                     {
                         if (!_rawPointCache.TryGetValue(guid, out var pointsMmf))
@@ -334,8 +334,7 @@ namespace Fusee.PointCloud.Core
         {
             if (_loadingPointsTriggeredFor.Contains(guid))
                 return;
-            if(_loadingPointsTriggeredFor.Count < 200)
-                _loadingPointsTriggeredFor.Push(guid);
+            _loadingPointsTriggeredFor.Enqueue(guid);
         }
 
         private void CreateVisPointCacheEntry(MemoryMappedFile pointsMmf, OctantId guid)
