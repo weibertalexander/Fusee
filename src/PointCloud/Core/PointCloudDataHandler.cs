@@ -12,7 +12,6 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fusee.PointCloud.Core
 {
@@ -115,8 +114,8 @@ namespace Fusee.PointCloud.Core
 
         private bool _disposed;
 
-        private readonly Task _pointLoadingTask;
-        private readonly Task _meshCreationTask;
+        private readonly Thread _pointLoadingThead;
+        private readonly Thread _meshCreationThead;
         private readonly CancellationTokenSource _ctsLoad = new();
         private readonly CancellationTokenSource _ctsCreate = new();
 
@@ -170,11 +169,16 @@ namespace Fusee.PointCloud.Core
                 }
             };
 
-            _pointLoadingTask = Task.Run(() =>
+            _pointLoadingThead = new Thread(() =>
             {
                 while (!_ctsLoad.IsCancellationRequested)
                 {
-                    if (_loadingPointsTriggeredFor.IsEmpty) continue;
+                    if (_loadingPointsTriggeredFor.IsEmpty)
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    }
+
                     _loadingPointsTriggeredFor.TryDequeue(out var guid);
                     try
                     {
@@ -192,22 +196,35 @@ namespace Fusee.PointCloud.Core
                         // if an exception happened during loading process call the error event for further handling of the situation
                         OnLoadingErrorEvent?.Invoke(this, new ErrorEventArgs(e));
                     }
+
                 }
-
-
-            });
-
-            _meshCreationTask = Task.Run(() =>
+            })
             {
-                while (!_ctsLoad.IsCancellationRequested)
+                IsBackground = true
+            };
+            _pointLoadingThead.Start();
+
+            _meshCreationThead = new Thread(() =>
+            {
+                while (!_ctsCreate.IsCancellationRequested)
                 {
-                    if (_creatingMeshesTriggeredFor.IsEmpty) continue;
+                    if (_creatingMeshesTriggeredFor.IsEmpty)
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    }
+
                     _creatingMeshesTriggeredFor.TryDequeue(out var octantId);
 
-                    if (!_visPtCache.TryGetValue(octantId, out var points)) continue;
+                    if (!_visPtCache.TryGetValue(octantId, out var points))
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    };
 
-                    IEnumerable<TGpuData> gpuData;
                     int numberOfPointsInNode = (int)_getNumberOfPointsInNode(octantId);
+                    IEnumerable<TGpuData> gpuData;
+
                     if (!_doRenderInstanced)
                         gpuData = MeshMaker.CreateMeshes(points, CreateGpuDataHandler);
                     else
@@ -219,9 +236,13 @@ namespace Fusee.PointCloud.Core
                     }
 
                     _gpuDataCache.AddOrUpdate(octantId, gpuData);
-                }
 
-            });
+                }
+            })
+            {
+                IsBackground = true
+            };
+            _meshCreationThead.Start();
         }
 
         private HashSet<OctantId> _queuedForUpdate = new HashSet<OctantId>();
@@ -444,8 +465,8 @@ namespace Fusee.PointCloud.Core
 
                 _ctsCreate.Cancel();
                 _ctsLoad.Cancel();
-                await _pointLoadingTask;
-                await _meshCreationTask;
+                _pointLoadingThead.Join();
+                _meshCreationThead.Join();
 
                 // Note disposing has been done.
                 _disposed = true;
