@@ -239,7 +239,6 @@ namespace Fusee.ImGuiImp.Desktop
         public static void UpdateImGuiInput(Vector2 scaleFactor)
         {
             var io = ImGui.GetIO();
-            io.ClearInputCharacters();
 
             io.AddMousePosEvent(Input.Mouse.X / scaleFactor.X, Input.Mouse.Y / scaleFactor.Y);
             io.AddMouseButtonEvent((int)ImGuiMouseButton.Left, Input.Mouse.LeftButton);

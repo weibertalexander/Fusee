@@ -392,7 +392,7 @@ namespace Fusee.ImGuiImp.Desktop.Templates
             var offsetFromBottom = ImGui.CalcTextSize(PickedFolderTxt) + ImGui.GetStyle().FramePadding * 2 + ImGui.GetStyle().WindowPadding * 2;
             var driveSelectionWidth = ImGui.GetWindowSize().X * 0.25f; // 25% of windowSize.x
 
-            ImGui.BeginChild($"DriveSelection##{_folderPickerCount}", new Vector2(driveSelectionWidth, -offsetFromBottom.Y), false, ImGuiWindowFlags.AlwaysUseWindowPadding | ImGuiWindowFlags.AlwaysAutoResize);
+            ImGui.BeginChild($"DriveSelection##{_folderPickerCount}", new Vector2(driveSelectionWidth, -offsetFromBottom.Y), ImGuiChildFlags.AlwaysUseWindowPadding | ImGuiChildFlags.AlwaysAutoResize);
             // Drive Selection
             var driveCount = 0;
             foreach (var drive in DriveInfo.GetDrives())
@@ -417,7 +417,7 @@ namespace Fusee.ImGuiImp.Desktop.Templates
             ImGui.SameLine();
             // take all space in y, however shrink in y in item height + standard padding + WindowPadding
             var offsetFromBottom = ImGui.CalcTextSize(PickedFolderTxt) + ImGui.GetStyle().FramePadding * 2 + ImGui.GetStyle().WindowPadding * 2;
-            if (ImGui.BeginChild($"#FolderBrowser##{_folderPickerCount}", new Vector2(-1, -offsetFromBottom.Y), false, ImGuiWindowFlags.AlwaysUseWindowPadding | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.HorizontalScrollbar))
+            if (ImGui.BeginChild($"#FolderBrowser##{_folderPickerCount}", new Vector2(-1, -offsetFromBottom.Y), ImGuiChildFlags.AlwaysUseWindowPadding | ImGuiChildFlags.AlwaysAutoResize))
             {
                 var fileSystemEntries = GetFileSystemEntries(CurrentOpenFolder.FullName);
                 foreach (var fse in fileSystemEntries)
@@ -461,7 +461,7 @@ namespace Fusee.ImGuiImp.Desktop.Templates
             var pickedFileButtonSize = ImGui.CalcTextSize(PickedFolderTxt) + ImGui.GetStyle().FramePadding * 2;
             var cancelFileButtonSize = ImGui.CalcTextSize(CancelFolderOpenTxt) + ImGui.GetStyle().FramePadding * 2;
 
-            ImGui.BeginChild($"FolderSelector##{_folderPickerCount}", new Vector2(-1, -1), false, ImGuiWindowFlags.AlwaysAutoResize);
+            ImGui.BeginChild($"FolderSelector##{_folderPickerCount}", new Vector2(-1, -1), ImGuiChildFlags.AlwaysAutoResize);
 
             // take all available window space minus the minus both buttons
             // push buttons therefore to the right

@@ -438,7 +438,7 @@ namespace Fusee.ImGuiImp.Desktop.Templates
             var driveSelectionWidth = ImGui.GetWindowSize().X * 0.25f; // 25% of windowSize.x
             // take all space in y, however shrink in y in item height + standard padding + WindowPadding
             var offsetFromBottom = ImGui.CalcTextSize(PickedFileTxt) + ImGui.GetStyle().FramePadding * 2 + ImGui.GetStyle().WindowPadding * 2;
-            ImGui.BeginChild($"DriveSelection##{_filePickerCount}", new Vector2(driveSelectionWidth, -offsetFromBottom.Y), false, ImGuiWindowFlags.AlwaysUseWindowPadding);
+            ImGui.BeginChild($"DriveSelection##{_filePickerCount}", new Vector2(driveSelectionWidth, -offsetFromBottom.Y), ImGuiChildFlags.AlwaysUseWindowPadding);
 
             var driveCount = 0;
             foreach (var drive in DriveInfo.GetDrives())
@@ -464,7 +464,7 @@ namespace Fusee.ImGuiImp.Desktop.Templates
             ImGui.GetWindowHeight();
             // take all space in y, however shrink in y in item height + standard padding + WindowPadding
             var offsetFromBottom = ImGui.CalcTextSize(PickedFileTxt) + ImGui.GetStyle().FramePadding * 2 + ImGui.GetStyle().WindowPadding * 2;
-            if (ImGui.BeginChild($"#FolderBrowser##{_filePickerCount}", new Vector2(-1, -offsetFromBottom.Y), false, ImGuiWindowFlags.AlwaysUseWindowPadding | ImGuiWindowFlags.HorizontalScrollbar))
+            if (ImGui.BeginChild($"#FolderBrowser##{_filePickerCount}", new Vector2(-1, -offsetFromBottom.Y), ImGuiChildFlags.AlwaysUseWindowPadding))
             {
                 if (CurrentOpenFolder != null && CurrentOpenFolder.Exists)
                 {
