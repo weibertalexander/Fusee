@@ -217,7 +217,7 @@ namespace Fusee.PointCloud.Core
                         continue;
                     }
 
-                    _creatingMeshesTriggeredFor.TryPop(out var octantId);
+                    _creatingMeshesTriggeredFor.TryPeek(out var octantId);
 
                     if (!_visPtCache.TryGetValue(octantId, out var points))
                     {
@@ -225,6 +225,7 @@ namespace Fusee.PointCloud.Core
                         continue;
                     };
 
+                    _creatingMeshesTriggeredFor.TryPop(out octantId);
                     int numberOfPointsInNode = (int)_getNumberOfPointsInNode(octantId);
                     IEnumerable<TGpuData> gpuData;
 
@@ -367,7 +368,6 @@ namespace Fusee.PointCloud.Core
         {
             if (!_loadingPointsTriggeredFor.Contains(guid))
                 _loadingPointsTriggeredFor.Push(guid);
-
         }
 
         private void CreateVisPointCacheEntry(MemoryMappedFile pointsMmf, OctantId guid)
