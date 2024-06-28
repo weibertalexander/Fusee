@@ -57,6 +57,13 @@ namespace Fusee.PointCloud.Potree.V2
         /// <param name="renderMode">Determines which <see cref="RenderMode"/> is used to display the returned point cloud."/></param>
         public IPointCloud GetPointCloudComponent(RenderMode renderMode = RenderMode.StaticMesh)
         {
+            Guard.IsNotNull(PotreeData, nameof(PotreeData));
+            Guard.IsNotNull(HandleReadExtraBytes, nameof(HandleReadExtraBytes));
+
+            var hasIntensity = PotreeData.Metadata.Attributes.TryGetValue("intensity", out var intensityAttrib);
+            var maxIntensity = intensityAttrib != null && hasIntensity ? intensityAttrib.MaxList[0] : 0;
+            var minIntensity = intensityAttrib != null && hasIntensity ? intensityAttrib.MinList[0] : 0;
+
             var metaData = new CreateMeshMetaData()
             {
                 PointSize = PotreeData.Metadata.PointSize,
@@ -65,9 +72,8 @@ namespace Fusee.PointCloud.Potree.V2
                 OffsetIntensity = offsetIntensity,
                 OffsetToPosValues = offsetPosition,
                 OffsetToExtraBytes = PotreeData.Metadata.OffsetToExtraBytes,
-                IntensityMax = PotreeData.Metadata.Attributes["intensity"].MaxList[0],
-                IntensityMin = PotreeData.Metadata.Attributes["intensity"].MinList[0],
-
+                IntensityMax = maxIntensity,
+                IntensityMin = minIntensity,
             };
 
             var shiftedAabbCenter = (float3)(PotreeData.Metadata.AABB.Center - PotreeData.Metadata.Offset);
@@ -303,38 +309,29 @@ namespace Fusee.PointCloud.Potree.V2
             Guard.IsTrue(File.Exists(metadataFilePath), metadataFilePath);
             Guard.IsTrue(File.Exists(metadataFilePath), hierarchyFilePath);
 
-            var Metadata = LoadPotreeMetadata(metadataFilePath);
-            var Hierarchy = new PotreeHierarchy()
+            var metadata = LoadPotreeMetadata(metadataFilePath);
+            var hierarchy = new PotreeHierarchy(new PotreeNode()
             {
-                Root = new()
-                {
-                    Name = "r",
-                }
-            };
+                Name = "r",
+            });
 
-            Metadata.Attributes = GetAttributesDict(Metadata.AttributesList);
+            metadata.FolderPath = folderPath;
 
-            Metadata.FolderPath = folderPath;
+            CalculateAttributeOffsets(ref metadata);
 
-            CalculateAttributeOffsets(ref Metadata);
-
-            Hierarchy.Root.Aabb = new AABBd(Metadata.BoundingBox.Min, Metadata.BoundingBox.Max);
+            hierarchy.Root.Aabb = new AABBd(metadata.BoundingBox.Min, metadata.BoundingBox.Max);
 
             var data = File.ReadAllBytes(hierarchyFilePath);
 
-            Guard.IsNotNull(data, nameof(data));
-
-            LoadHierarchyRecursive(ref Hierarchy.Root, ref data, 0, Metadata.Hierarchy.FirstChunkSize);
+            LoadHierarchyRecursive(ref hierarchy.Root, ref data, 0, metadata.Hierarchy.FirstChunkSize);
 
             //TODO: this is needed because the .NET Potree Converter is producing Nodes with 0 points right now. Remove when this is fixed.
-            CleanupHierarchy(Hierarchy.Root);
+            CleanupHierarchy(hierarchy.Root);
+            hierarchy.Root.Traverse(n => hierarchy.Nodes.Add(n));
 
-            Hierarchy.Nodes = new();
-            Hierarchy.Root.Traverse(n => Hierarchy.Nodes.Add(n));
+            Potree2Reader.FlipYZAxis(metadata, hierarchy);
 
-            Potree2Reader.FlipYZAxis(Metadata, Hierarchy);
-
-            return (Metadata, Hierarchy);
+            return (metadata, hierarchy);
         }
 
         private static void CleanupHierarchy(PotreeNode root)
@@ -511,11 +508,6 @@ namespace Fusee.PointCloud.Potree.V2
 
                 attributeOffset += potreeMetadata.AttributesList[i].Size;
             }
-        }
-
-        private static Dictionary<string, PotreeSettingsAttribute> GetAttributesDict(List<PotreeSettingsAttribute> attributes)
-        {
-            return attributes.ToDictionary(x => x.Name, x => x);
         }
 
         #endregion LoadHierarchy

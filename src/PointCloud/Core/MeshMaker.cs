@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.HighPerformance;
+﻿using CommunityToolkit.Diagnostics;
+using CommunityToolkit.HighPerformance;
 using CommunityToolkit.HighPerformance.Buffers;
 using Fusee.Engine.Common;
 using Fusee.Engine.Core;
@@ -253,6 +254,7 @@ namespace Fusee.PointCloud.Core
             var colors = meshData.Item3;
             var flags = meshData.Item4;
             var boundingBox = meshData.Item5;
+            Guard.IsNotNull(ModuleExtensionPoint.CreateGpuMesh);
             var mesh = ModuleExtensionPoint.CreateGpuMesh(PrimitiveType.Points, vertices, triangles, null, colors, null, null, null, null, null, null, null, flags);
             mesh.BoundingBox = boundingBox;
             return mesh;

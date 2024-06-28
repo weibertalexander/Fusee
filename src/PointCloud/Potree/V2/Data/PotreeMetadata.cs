@@ -3,6 +3,8 @@ using Fusee.Math.Core;
 using Fusee.PointCloud.Common;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
 
 #pragma warning disable CS1591
 
@@ -30,7 +32,7 @@ namespace Fusee.PointCloud.Potree.V2.Data
 
     public class PotreeSettingsAttribute
     {
-        public string? Name { get; set; }
+        public string Name { get; set; }
         public string? Description { get; set; }
         public int Size { get; set; }
         public int NumElements { get; set; }
@@ -38,16 +40,21 @@ namespace Fusee.PointCloud.Potree.V2.Data
         public string? Type { get; set; }
 
         [JsonProperty(PropertyName = "min")]
-        public List<double>? MinList { get; set; }
+        public List<double> MinList { get; set; } = new List<double>();
 
         [JsonProperty(PropertyName = "max")]
-        public List<double>? MaxList { get; set; }
+        public List<double> MaxList { get; set; } = new List<double>();
 
         [JsonIgnore]
         public int AttributeOffset { get; set; }
 
         [JsonIgnore]
         public bool IsExtraByte { get; set; } = false;
+
+        public PotreeSettingsAttribute(string name)
+        {
+            Name = name;
+        }
     }
 
 
@@ -61,7 +68,7 @@ namespace Fusee.PointCloud.Potree.V2.Data
         public int OffsetToExtraBytes { get; set; } = -1;
         public string? Projection { get; set; }
 
-        public IPointWriterHierarchy? Hierarchy { get; set; }
+        public IPointWriterHierarchy Hierarchy { get; set; }
 
         [JsonProperty(PropertyName = "offset")]
         public List<double>? OffsetList { get; set; }
@@ -74,16 +81,16 @@ namespace Fusee.PointCloud.Potree.V2.Data
         public double3 Scale { get { Guard.IsNotNull(ScaleList); return new double3(ScaleList[0], ScaleList[1], ScaleList[2]); } }
 
         public double Spacing { get; set; }
-        public PotreeSettingsBoundingBox? BoundingBox { get; set; }
+        public PotreeSettingsBoundingBox BoundingBox { get; set; }
 
         public AABBd AABB { get { Guard.IsNotNull(BoundingBox); return new AABBd(BoundingBox.Min, BoundingBox.Max); } }
 
         public string? Encoding { get; set; }
 
         [JsonProperty(PropertyName = "attributes")]
-        internal List<PotreeSettingsAttribute>? AttributesList { get; set; }
+        internal List<PotreeSettingsAttribute> AttributesList { get; set; }
 
-        public Dictionary<string, PotreeSettingsAttribute>? Attributes { get; set; }
+        public Dictionary<string, PotreeSettingsAttribute> Attributes { get; set; }
 
         [JsonIgnore]
         public int PointSize { get; set; }
@@ -93,6 +100,22 @@ namespace Fusee.PointCloud.Potree.V2.Data
 
         [JsonIgnore]
         public float4x4 PrincipalAxisRotation { get; set; }
+
+        public PotreeMetadata(IPointWriterHierarchy hierarchy, List<PotreeSettingsAttribute>  attributesList)
+        {
+            Hierarchy = hierarchy;
+            AttributesList = attributesList;
+            Attributes = AttributesList.ToDictionary(x => x.Name, x => x);
+        }
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            if (AttributesList != null)
+            {
+                Attributes = AttributesList.ToDictionary(x => x.Name, x => x);
+            }
+        }
 
     }
 }
