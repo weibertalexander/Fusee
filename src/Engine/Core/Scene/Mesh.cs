@@ -172,7 +172,7 @@ namespace Fusee.Engine.Core.Scene
         /// <summary>
         /// SessionUniqueIdentifier is used to verify a Mesh's uniqueness in the current session.
         /// </summary>
-        public Suid SessionUniqueIdentifier { get; } = Suid.GenerateSuid();
+        public Guid UniqueIdentifier { get; } = Guid.NewGuid();
 
         /// <summary>
         /// Update all changed <see cref="MeshAttributes{T}"/> data before each frame?
@@ -331,7 +331,10 @@ namespace Fusee.Engine.Core.Scene
         protected Mesh()
         {
             if (VerticesSet)
+            {
+                Guard.IsNotNull(Vertices);
                 BoundingBox = new AABBf(Vertices.AsReadOnlySpan);
+            }
         }
 
         /// <summary>

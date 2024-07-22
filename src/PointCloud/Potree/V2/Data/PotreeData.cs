@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Diagnostics;
 using Fusee.PointCloud.Common;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 
@@ -43,18 +42,22 @@ namespace Fusee.PointCloud.Potree.V2.Data
         /// </summary>
         /// <param name="potreeHierarchy"></param>
         /// <param name="potreeMetadata"></param>
-        public PotreeData(PotreeHierarchy potreeHierarchy, PotreeMetadata potreeMetadata)
+        /// <param name="initMmf"></param>
+        public PotreeData(PotreeHierarchy potreeHierarchy, PotreeMetadata potreeMetadata, bool initMmf = true)
         {
             Hierarchy = potreeHierarchy;
             Metadata = potreeMetadata;
 
             var path = Path.Combine(Metadata.FolderPath, Potree2Consts.OctreeFileName);
 
-            OctreeMappedFile = MemoryMappedFile.CreateFromFile(path, FileMode.Open);
-            ReadViewAccessor = OctreeMappedFile.CreateViewAccessor();
-            WriteViewAccessor = OctreeMappedFile.CreateViewAccessor();
+            if (initMmf)
+            {
+                OctreeMappedFile = MemoryMappedFile.CreateFromFile(path, FileMode.Open);
+                ReadViewAccessor = OctreeMappedFile.CreateViewAccessor();
+                WriteViewAccessor = OctreeMappedFile.CreateViewAccessor();
 
-            Guard.IsTrue(CheckAllFileStreamsValidity());
+                Guard.IsTrue(CheckAllFileStreamsValidity());
+            }
         }
 
         /// <summary>
@@ -64,7 +67,7 @@ namespace Fusee.PointCloud.Potree.V2.Data
         /// <returns></returns>
         public PotreeNode? GetNode(OctantId octantId)
         {
-            return Hierarchy.Nodes.Find(n => n.OctantId == octantId);
+            return Hierarchy?.Nodes?.Find(n => n.OctantId == octantId);
         }
 
         /// <summary>

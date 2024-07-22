@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading;
 
 namespace Fusee.Base.Core
 {
@@ -17,7 +18,7 @@ namespace Fusee.Base.Core
         #region Microsoft.Extensions.Caching.Memory_6_OR_OLDER
 
         private static readonly Lazy<Func<MemoryCache, object>> GetEntries6 =
-            new Lazy<Func<MemoryCache, object>>(() => (Func<MemoryCache, object>)Delegate.CreateDelegate(
+            new(() => (Func<MemoryCache, object>)Delegate.CreateDelegate(
                 typeof(Func<MemoryCache, object>),
                 typeof(MemoryCache).GetProperty("EntriesCollection", BindingFlags.NonPublic | BindingFlags.Instance).GetGetMethod(true),
                 throwOnBindFailure: true));
@@ -27,12 +28,12 @@ namespace Fusee.Base.Core
         #region Microsoft.Extensions.Caching.Memory_7_OR_NEWER
 
         private static readonly Lazy<Func<MemoryCache, object>> GetCoherentState =
-            new Lazy<Func<MemoryCache, object>>(() =>
+            new(() =>
                 CreateGetter<MemoryCache, object>(typeof(MemoryCache)
                     .GetField("_coherentState", BindingFlags.NonPublic | BindingFlags.Instance)));
 
         private static readonly Lazy<Func<object, IDictionary>> GetEntries7 =
-            new Lazy<Func<object, IDictionary>>(() =>
+            new(() =>
                 CreateGetter<object, IDictionary>(typeof(MemoryCache)
                     .GetNestedType("CoherentState", BindingFlags.NonPublic)
                     .GetField("_entries", BindingFlags.NonPublic | BindingFlags.Instance)));
@@ -105,6 +106,7 @@ namespace Fusee.Base.Core
         private readonly MemoryCache _cache;
 
         private bool _disposed = false;
+        private readonly SemaphoreSlim _cacheLock = new(1);
 
         /// <summary>
         /// Creates a new instance and initializes the internal <see cref="MemoryCache"/>.
@@ -135,20 +137,26 @@ namespace Fusee.Base.Core
         /// </summary>
         /// <param name="key">The key of the cache item.</param>
         /// <param name="cacheEntry">The cache item.</param>
-        public void AddOrUpdate(TKey key, TItem cacheEntry)
+        public async void AddOrUpdate(TKey key, TItem cacheEntry)
         {
-            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .SetPriority(CacheItemPriority.High)
-                // Keep in cache for this time, reset time if accessed.
-                .SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration));
-
-            cacheEntryOptions.RegisterPostEvictionCallback((subkey, subValue, reason, state) =>
+            try
             {
-                HandleEvictedItem?.Invoke(subkey, subValue, reason, state);
-            });
+                await _cacheLock.WaitAsync();
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetPriority(CacheItemPriority.High)
+                    // Keep in cache for this time, reset time if accessed.
+                    .SetSlidingExpiration(TimeSpan.FromSeconds(SlidingExpiration));
 
-            // Key not in cache, so get data.
-            _cache.Set(key, cacheEntry, cacheEntryOptions);
+                cacheEntryOptions.RegisterPostEvictionCallback((subkey, subValue, reason, state) =>
+                {
+                    HandleEvictedItem?.Invoke(subkey, subValue, reason, state);
+                });
+
+                // Key not in cache, so get data.
+                _cache.Set(key, cacheEntry, cacheEntryOptions);
+
+            }
+            finally { _cacheLock.Release(); }
         }
 
         /// <summary>
