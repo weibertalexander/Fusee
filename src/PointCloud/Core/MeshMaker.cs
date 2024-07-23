@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Diagnostics;
+using CommunityToolkit.Diagnostics;
 using CommunityToolkit.HighPerformance;
 using CommunityToolkit.HighPerformance.Buffers;
 using Fusee.Engine.Common;
@@ -144,16 +144,15 @@ namespace Fusee.PointCloud.Core
             var size = numberOfPoints * metaData.PointSize;
             using var accessor = mmf.CreateViewAccessor();
             var rawPoints = new byte[size];
-
             accessor.ReadArray(0, rawPoints, 0, size);
 
+            MemoryOwner<VisualizationPoint> visPoints = MemoryOwner<VisualizationPoint>.Allocate(numberOfPoints);
             var pointsSpan = rawPoints.AsSpan();
-            var numberOfRelevantPoints = 0;
-
-            var visPoints = new List<VisualizationPoint>(65535);
 
             for (int i = 0; i < numberOfPoints; i++)
             {
+                var visPoint = new VisualizationPoint();
+
                 float x;
                 float y;
                 float z;
@@ -184,6 +183,8 @@ namespace Fusee.PointCloud.Core
                     default:
                         throw new ArgumentException($"Unsupported pos type: {metaData.PositionType} ");
                 }
+
+                visPoint.Position = new float3(x, z, y);
 
                 float4 color;
                 if (metaData.OffsetColor != -1)
@@ -216,6 +217,8 @@ namespace Fusee.PointCloud.Core
                     color = float4.UnitW;
                 }
 
+                visPoint.Color = color;
+
                 uint flag = 0;
                 Span<byte> extraBytesRaw = new();
                 if (metaData.OffsetToExtraBytes != -1 && metaData.OffsetToExtraBytes != 0)
@@ -223,7 +226,7 @@ namespace Fusee.PointCloud.Core
                     var extraByteSize = metaData.PointSize - metaData.OffsetToExtraBytes;
                     extraBytesRaw = pointsSpan.Slice(i * metaData.PointSize + metaData.OffsetToExtraBytes, extraByteSize);
                 }
-                //handleExtraBytes should also handle the case there aren't any extra bytes -> call in any case.
+
                 if (handleExtraBytes != null)
                 {
                     try
@@ -235,29 +238,13 @@ namespace Fusee.PointCloud.Core
                         onPointCloudReadError?.Invoke(null, new ErrorEventArgs(e));
                     }
                 }
+                visPoint.Flags = flag;
 
-                if (x != 0 || y != 0 || z != 0)
-                {
-                    var visPoint = new VisualizationPoint
-                    {
-                        Position = new float3(x, y, z),
-                        Color = color,
-                        Flags = flag
-                    };
-
-                    numberOfRelevantPoints++;
-                    visPoints.Add(visPoint);
-                }
+                visPoints.Span[i] = visPoint;
             }
 
-            MemoryOwner<VisualizationPoint> visPointsMem = MemoryOwner<VisualizationPoint>.Allocate(numberOfRelevantPoints);
-            for (int i = 0; i < visPoints.Count; i++)
-            {
-                visPointsMem.Span[i] = visPoints[i];
-            }
-            return visPointsMem;
+            return visPoints;
         }
-
 
         private static (float3[], uint[], uint[], uint[], AABBf) GetGpuDataContents(MemoryOwner<VisualizationPoint> points)
         {
@@ -299,7 +286,6 @@ namespace Fusee.PointCloud.Core
             var colors = meshData.Item3;
             var flags = meshData.Item4;
             var boundingBox = meshData.Item5;
-
             Guard.IsNotNull(ModuleExtensionPoint.CreateGpuMesh);
             var mesh = ModuleExtensionPoint.CreateGpuMesh(PrimitiveType.Points, vertices, triangles, null, colors, null, null, null, null, null, null, null, flags);
             mesh.BoundingBox = boundingBox;
