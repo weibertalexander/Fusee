@@ -208,7 +208,8 @@ namespace Fusee.ImGuiImp.Desktop.Templates
         }
         private Vector4 _windowBackground = new(200, 200, 200, 255);
 
-        public uint _windowBackgroundUint = new Vector4(200, 200, 200, 255).ToUintColor();
+        private readonly Vector4 _windowBackgroundCol = new (200, 200, 200, 255);
+        private uint _windowBackgroundUint;
 
         /// <summary>
         /// Background of file selection menu
@@ -253,6 +254,8 @@ namespace Fusee.ImGuiImp.Desktop.Templates
 
                 AllowedExtensions.AddRange(allowedExtensions.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries));
             }
+
+            WindowBackground = new Vector4(200, 200, 200, 255);
         }
         public virtual unsafe void Draw(ref bool filePickerOpen)
         {
@@ -276,7 +279,7 @@ namespace Fusee.ImGuiImp.Desktop.Templates
             // Begin window
             ImGui.SetNextWindowSizeConstraints(new Vector2(500, 300), ImGui.GetWindowViewport().Size * 0.75f);
             var allowResizeFlag = AllowFilePickerResize ? ImGuiWindowFlags.None : ImGuiWindowFlags.NoResize;
-            ImGui.Begin(Id, ref filePickerOpen, ImGuiWindowFlags.Modal | ImGuiWindowFlags.NoCollapse | allowResizeFlag);
+            ImGui.Begin(Id, ref filePickerOpen, ImGuiWindowFlags.Modal | ImGuiWindowFlags.NoCollapse | allowResizeFlag | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
 
             // draw navigation buttons and folder selection on the same line
             DrawNavButtons();
@@ -298,7 +301,6 @@ namespace Fusee.ImGuiImp.Desktop.Templates
             DrawFileSelector(ref filePickerOpen);
 
             ImGui.End();
-
 
             if (ShowNewFolderButton && IsNewFolderNameWindowOpen)
             {
@@ -464,7 +466,7 @@ namespace Fusee.ImGuiImp.Desktop.Templates
             ImGui.GetWindowHeight();
             // take all space in y, however shrink in y in item height + standard padding + WindowPadding
             var offsetFromBottom = ImGui.CalcTextSize(PickedFileTxt) + ImGui.GetStyle().FramePadding * 2 + ImGui.GetStyle().WindowPadding * 2;
-            if (ImGui.BeginChild($"#FolderBrowser##{_filePickerCount}", new Vector2(-1, -offsetFromBottom.Y), ImGuiChildFlags.AlwaysUseWindowPadding))
+            if (ImGui.BeginChild($"#FolderBrowser##{_filePickerCount}", new Vector2(-1, -offsetFromBottom.Y), ImGuiChildFlags.AlwaysUseWindowPadding, ImGuiWindowFlags.HorizontalScrollbar))
             {
                 if (CurrentOpenFolder != null && CurrentOpenFolder.Exists)
                 {

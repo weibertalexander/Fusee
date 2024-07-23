@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<PackageId>Fusee.Android</PackageId>
 		<TargetFramework>MonoAndroid12.0</TargetFramework>
+		<TargetFramework>net8.0-android</TargetFramework>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<IncludeSymbols>false</IncludeSymbols>
 		<IsPackable>true</IsPackable>

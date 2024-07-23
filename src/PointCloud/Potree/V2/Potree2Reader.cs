@@ -13,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.MemoryMappedFiles;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Fusee.PointCloud.Potree.V2
@@ -58,7 +57,6 @@ namespace Fusee.PointCloud.Potree.V2
         public IPointCloud GetPointCloudComponent(RenderMode renderMode = RenderMode.StaticMesh)
         {
             Guard.IsNotNull(PotreeData, nameof(PotreeData));
-            Guard.IsNotNull(HandleReadExtraBytes, nameof(HandleReadExtraBytes));
 
             var hasIntensity = PotreeData.Metadata.Attributes.TryGetValue("intensity", out var intensityAttrib);
             var maxIntensity = intensityAttrib != null && hasIntensity ? intensityAttrib.MaxList[0] : 0;
@@ -74,6 +72,7 @@ namespace Fusee.PointCloud.Potree.V2
                 OffsetToExtraBytes = PotreeData.Metadata.OffsetToExtraBytes,
                 IntensityMax = maxIntensity,
                 IntensityMin = minIntensity,
+                PositionType = SupportedPositionTypes.int32
             };
 
             var shiftedAabbCenter = (float3)(PotreeData.Metadata.AABB.Center - PotreeData.Metadata.Offset);
