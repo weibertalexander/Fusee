@@ -170,8 +170,9 @@ namespace Fusee.PointCloud.Core
 
         private void DetermineVisibilityForChildren(IPointCloudOctant node)
         {
-            if (node.IsLeaf)
-                return;
+            //TODO: There seems to be a bug in the converter that marks all child nods as leaves. Uncomment this when the bug is fixed.
+            //if (node.IsLeaf)
+            //    return;
 
             // add child nodes to the heap of ordered nodes
             foreach (var child in node.Children)
@@ -209,7 +210,7 @@ namespace Fusee.PointCloud.Core
 
         private void SetMinScreenProjectedSize(double3 camPos, float fov)
         {
-            (Octree.Root).ComputeScreenProjectedSize(camPos, ViewportHeight, fov, Model.Translation(), float3.One);
+            Octree.Root.ComputeScreenProjectedSize(camPos, ViewportHeight, fov, Model.Translation(), float3.One);
             _minScreenProjectedSize = Octree.Root.ProjectedScreenSize * _minProjSizeModifier;
         }
     }
