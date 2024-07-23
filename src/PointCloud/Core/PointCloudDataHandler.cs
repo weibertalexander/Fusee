@@ -438,49 +438,6 @@ namespace Fusee.PointCloud.Core
             return false;
         }
 
-        private void OnItemEvictedFromGpuDataCache(object guid, object? meshes, EvictionReason reason, object? state)
-        {
-            if (meshes == null) return;
-            _disposeQueue.Enqueue((IEnumerable<TGpuData>)meshes);
-        }
-
-        private bool UpdateGpuData(OctantId octantId, IEnumerable<TGpuData> gpuData)
-        {
-            var updateSucceded = UpdateFromVisPoints(octantId, ref gpuData);
-            if (updateSucceded)
-            {
-                foreach (var mesh in gpuData)
-                {
-                    UpdatedMeshAction?.Invoke(mesh);
-                }
-                _gpuDataCache.AddOrUpdate(octantId, gpuData);
-            }
-
-            return updateSucceded;
-        }
-
-        private bool UpdateFromVisPoints(OctantId octantId, ref IEnumerable<TGpuData> gpuData)
-        {
-            Guard.IsNotNull(CreateGpuDataHandler);
-
-            if (_visPtCache.TryGetValue(octantId, out var points))
-            {
-                if (UpdateGpuDataCache != null)
-                {
-                    UpdateGpuDataCache.Invoke(ref gpuData, points);
-                    return true;
-                }
-                else
-                {
-                    //Mesh has to be created anew.
-                    TriggerMeshCreation(octantId);
-                }
-            }
-
-            //No points in cache - cannot update (point loading is triggered in VisibilityTester)
-            return false;
-        }
-
         /// <summary>
         /// Dispose(bool disposing) executes in two distinct scenarios.
         /// If disposing equals true, the method has been called directly

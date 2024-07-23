@@ -133,23 +133,7 @@ namespace Fusee.PointCloud.Core
         /// <returns></returns>
         public static IEnumerable<TGpuData> CreateInstanceData<TGpuData>(MemoryOwner<VisualizationPoint> points, CreateGpuData<TGpuData> createGpuDataHandler)
         {
-            return new List<TGpuData>() { createGpuDataHandler(points) };
-        }
-
-        public static MemoryOwner<VisualizationPoint> CreateVisualizationPoints(MemoryMappedFile mmf, int numberOfPoints, HandleReadExtraBytes? handleExtraBytes, CreateMeshMetaData metaData, EventHandler<ErrorEventArgs>? onPointCloudReadError)
-        {
-            var size = numberOfPoints * metaData.PointSize;
-            using var accessor = mmf.CreateViewAccessor();
-            var rawPoints = new byte[size];
-
-            accessor.ReadArray(0, rawPoints, 0, size);
-
-            var pointsSpan = rawPoints.AsSpan();
-            var numberOfRelevantPoints = 0;
-
-            var visPoints = new List<VisualizationPoint>(65535);
-
-            for (int i = 0; i < numberOfPoints; i++)
+            return new List<TGpuData>
             {
                 createGpuDataHandler(points)
             };

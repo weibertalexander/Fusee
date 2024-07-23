@@ -1,4 +1,4 @@
-using CommunityToolkit.Diagnostics;
+﻿using CommunityToolkit.Diagnostics;
 using Fusee.Math.Core;
 using Fusee.PointCloud.Common;
 using Newtonsoft.Json;
@@ -68,7 +68,7 @@ namespace Fusee.PointCloud.Potree.V2.Data
         public int OffsetToExtraBytes { get; set; } = -1;
         public string? Projection { get; set; }
 
-        public IPointWriterHierarchy? Hierarchy { get; set; }
+        public IPointWriterHierarchy Hierarchy { get; set; }
 
         [JsonProperty(PropertyName = "offset")]
         public List<double>? OffsetList { get; set; }
@@ -81,16 +81,16 @@ namespace Fusee.PointCloud.Potree.V2.Data
         public double3 Scale { get { Guard.IsNotNull(ScaleList); return new double3(ScaleList[0], ScaleList[1], ScaleList[2]); } }
 
         public double Spacing { get; set; }
-        public PotreeSettingsBoundingBox? BoundingBox { get; set; }
+        public PotreeSettingsBoundingBox BoundingBox { get; set; }
 
         public AABBd AABB { get { Guard.IsNotNull(BoundingBox); return new AABBd(BoundingBox.Min, BoundingBox.Max); } }
 
         public string? Encoding { get; set; }
 
         [JsonProperty(PropertyName = "attributes")]
-        internal List<PotreeSettingsAttribute>? AttributesList { get; set; }
+        internal List<PotreeSettingsAttribute> AttributesList { get; set; }
 
-        public Dictionary<string, PotreeSettingsAttribute>? Attributes { get; set; }
+        public Dictionary<string, PotreeSettingsAttribute> Attributes { get; set; }
 
         [JsonIgnore]
         public int PointSize { get; set; }

@@ -357,30 +357,6 @@ namespace Fusee.PointCloud.Potree.V2
             }
         }
 
-        private static void CleanupHierarchy(PotreeNode root)
-        {
-            Stack<PotreeNode> stack = new();
-            stack.Push(root);
-
-            while (stack.Count > 0)
-            {
-                PotreeNode node = stack.Pop();
-
-                for (int i = 0; i < node.Children.Length; i++)
-                {
-                    var child = node.Children[i];
-
-                    if (child != null)
-                    {
-                        if (child.NumPoints == 0)
-                            node.Children[i] = null;
-                        else
-                            stack.Push(child);
-                    }
-                }
-            }
-        }
-
         private static PotreeMetadata LoadPotreeMetadata(string metadataFilepath)
         {
             var settings = new JsonSerializerSettings();
