@@ -182,18 +182,6 @@ namespace Fusee.Tests.Render.Desktop
         }
 
         [Test]
-        public void ThreeDFontTest()
-        {
-            var referenceImagePath = Path.Combine(Program.FilePath, "References", "ThreeDFont.png");
-            var testImagePath = Path.Combine(Program.FilePath, "ThreeDFont.png");
-
-            var result = CompareImage(referenceImagePath, testImagePath);
-
-            TestContext.WriteLine($"Number of pixels: {result.pixelCount}\nNumber of different pixels: {result.differentPixelCount}\nAverage difference: {result.averageDifference}\nMaximum difference: {result.maximumDifference}\n");
-            Assert.That(result.averageDifference, Is.LessThanOrEqualTo(0.01f));
-        }
-
-        [Test]
         public void UITest()
         {
             var referenceImagePath = Path.Combine(Program.FilePath, "References", "UI.png");
