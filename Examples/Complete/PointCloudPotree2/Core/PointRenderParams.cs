@@ -63,7 +63,7 @@ namespace Fusee.Examples.PointCloudPotree2.Core
             set
             {
                 _size = value;
-                DepthPassEf.SetFxParam(UniformNameDeclarations.PointSizeHash, Size);
+                DepthPassEf.SetFxParam(UniformNameDeclarations.PointSizeHash, (float)Size);
                 ColorPassEf.PointSize = _size;
             }
         }
